@@ -64,7 +64,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .hint{color:var(--sub);font-size:.95rem;line-height:1.9}
 .hint .big{font-size:1.3rem}
 .station-name{font-size:2.6rem;font-weight:900;letter-spacing:.06em;line-height:1.2}
-.station-sub{color:var(--sub);font-size:.85rem;letter-spacing:.4em;margin-top:-8px}
+.station-sub{color:var(--sub);font-size:.85rem;line-height:1.5;max-width:100%;margin-top:-8px}
 .line-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .line-tag{
   color:#fff;font-size:.8rem;font-weight:700;padding:4px 14px 5px;border-radius:999px;
@@ -244,8 +244,9 @@ fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
     line.stations.forEach(function(entry){
       var name=typeof entry==='string'?entry:entry.name;
       var status=typeof entry==='object'&&entry.status?entry.status:'open';
-      if(!seen.has(name)) seen.set(name,{id:'s'+seen.size,name:name,lines:[],status:status});
+      if(!seen.has(name)) seen.set(name,{id:'s'+seen.size,name:name,en:entry.en,lines:[],status:status});
       seen.get(name).lines.push(line);
+      if(entry.en&&seen.get(name).en&&seen.get(name).en!==entry.en)console.warn('英文名不一致：'+name);
       if(status!=='open')seen.get(name).status=status;
     });
   });
@@ -366,7 +367,9 @@ function showStation(s,fromHist){
   slot.style.display='none';tenList.style.display='none';hintArea.style.display='none';
   finalBox.style.display='block';
   stName.textContent=s.name;
-  stPy.textContent=s.statusNote||'CHENGDU RAIL TRANSIT';
+  stPy.textContent=s.en||'CHENGDU RAIL TRANSIT';
+  stPy.setAttribute('lang','en');
+  if(s.statusNote){stPy.textContent+=' · '+s.statusNote;stPy.removeAttribute('lang')}
   stLines.innerHTML='';
   s.lines.forEach(function(l){
     var t=document.createElement('span');t.className='line-tag';
