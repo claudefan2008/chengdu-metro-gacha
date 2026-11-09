@@ -367,7 +367,7 @@ function showStation(s,fromHist){
   slot.style.display='none';tenList.style.display='none';hintArea.style.display='none';
   finalBox.style.display='block';
   stName.textContent=s.name;
-  stPy.textContent=s.en||'CHENGDU RAIL TRANSIT';
+  stPy.textContent=s.en||'CHENGDU METRO';
   stPy.setAttribute('lang','en');
   if(s.statusNote){stPy.textContent+=' · '+s.statusNote;stPy.removeAttribute('lang')}
   stLines.innerHTML='';
