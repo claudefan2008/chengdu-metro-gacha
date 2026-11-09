@@ -14,7 +14,7 @@
 }catch(e){}})();
 </script>
 <title>下一站去哪儿 — 成都地铁扭蛋｜随机选站决定你的下次出行</title>
-<meta name="description" content="从成都地铁约380座车站中随机抽一站：按线路筛选、单抽或十连，看看下一站去哪儿。附高德/百度地图直达，免费免登录。">
+<meta name="description" content="从成都轨道交通线网随机抽一站：18条线路及支线、按线路筛选、单抽或十连。附站点百度百科、高德/百度地图直达，免费免登录。">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
@@ -167,7 +167,7 @@ footer a{color:var(--sub)}
   <div class="result" id="result">
     <div class="hint" id="hint-area">
       <div style="font-size:3rem;margin-bottom:10px">🚇</div>
-      <div class="big">成都地铁 · <span id="total-n">380+</span> 座车站</div>
+      <div class="big">成都轨道交通 · <span id="total-n">--</span> 座可抽车站</div>
       <div>随机抽一站，在没听过的站下车走走看</div>
     </div>
     <div class="slot" id="slot" style="display:none"><div class="slot-inner" id="slot-inner"></div></div>
@@ -184,6 +184,7 @@ footer a{color:var(--sub)}
   </div>
 
   <div class="share-row" id="share-row" style="display:none">
+    <a class="share-btn" id="wiki-link" target="_blank" rel="noopener">📖 百度百科</a>
     <a class="share-btn" id="amap-link" target="_blank" rel="noopener">🗺️ 高德地图</a>
     <a class="share-btn" id="baidu-link" target="_blank" rel="noopener">🧭 百度地图</a>
     <button class="share-btn" id="copy-link">🔗 复制分享链接</button>
@@ -206,7 +207,8 @@ footer a{color:var(--sub)}
 
   <footer>
     灵感来源：<a href="https://la-rikopatto.github.io/kien-sekve/" target="_blank" rel="noopener">次はどこへ — 駅ガチャ</a>（日本版）<br>
-    站点数据依据成都轨道交通官方运营线路整理（2025 年），仅供娱乐参考。<br>
+    线路依据用户提供的《成都轨道交通线网示意图》整理；站名及运营状态参考成都轨道集团、百度百科公开资料。<br>
+    暂未开通、暂停运营站及仅供换乘的天府站不参与抽选。线路及运营状态请以成都轨道集团公告为准。<br>
     下一站去哪儿 © 2026 · 成都地铁扭蛋
   </footer>
 </div>
@@ -239,14 +241,22 @@ fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
   LINES=lines;
   var seen=new Map();
   lines.forEach(function(line){
-    line.stations.forEach(function(name){
-      if(!seen.has(name)) seen.set(name,{id:'s'+seen.size,name:name,lines:[]});
+    line.stations.forEach(function(entry){
+      var name=typeof entry==='string'?entry:entry.name;
+      var status=typeof entry==='object'&&entry.status?entry.status:'open';
+      if(!seen.has(name)) seen.set(name,{id:'s'+seen.size,name:name,lines:[],status:status});
       seen.get(name).lines.push(line);
+      if(status!=='open')seen.get(name).status=status;
     });
   });
   STATIONS=Array.from(seen.values());
-  STATIONS.forEach(function(s){stationById.set(s.id,s)});
-  $('total-n').textContent=STATIONS.length;
+  STATIONS.forEach(function(s){
+    stationById.set(s.id,s);
+    if(s.status==='unopened')s.statusNote='暂未开通';
+    if(s.status==='suspended')s.statusNote='暂停运营';
+    if(s.name==='天府站')s.statusNote='仅供换乘，暂不提供进出站';
+  });
+  $('total-n').textContent=STATIONS.filter(function(s){return s.status==='open'&&s.name!=='天府站'}).length;
   buildChips();
   /* 分享链接 ?station=sNN */
   try{
@@ -284,8 +294,9 @@ document.querySelectorAll('.mode').forEach(function(b){
 
 /* ---------- 抽选 ---------- */
 function pool(){
-  if(!selected.size) return STATIONS;
-  return STATIONS.filter(function(s){return s.lines.some(function(l){return selected.has(l.code)})});
+  var available=STATIONS.filter(function(s){return s.status==='open'&&s.name!=='天府站'});
+  if(!selected.size) return available;
+  return available.filter(function(s){return s.lines.some(function(l){return selected.has(l.code)})});
 }
 function randInt(n){
   if(window.crypto&&crypto.getRandomValues){
@@ -355,7 +366,7 @@ function showStation(s,fromHist){
   slot.style.display='none';tenList.style.display='none';hintArea.style.display='none';
   finalBox.style.display='block';
   stName.textContent=s.name;
-  stPy.textContent='CHENGDU METRO';
+  stPy.textContent=s.statusNote||'CHENGDU RAIL TRANSIT';
   stLines.innerHTML='';
   s.lines.forEach(function(l){
     var t=document.createElement('span');t.className='line-tag';
@@ -385,8 +396,13 @@ function showTen(list){
   setupShare(first);
   pushHist(first);
 }
+function baikeName(s){
+  return s.name==='中医大省医院'?'中医大·省医院':s.name;
+}
 function setupShare(s){
   shareRow.style.display='flex';
+  $('wiki-link').href='https://baike.baidu.com/item/'+encodeURIComponent(baikeName(s)+'站');
+  $('wiki-link').title='查看'+baikeName(s)+'站的百度百科词条';
   var q=encodeURIComponent(s.name+'地铁站 成都');
   amapLink.href='https://uri.amap.com/search?keyword='+q+'&city=成都';
   baiduLink.href='https://map.baidu.com/search/'+encodeURIComponent(s.name+'地铁站')+'/@11580000,3560000,12z';
