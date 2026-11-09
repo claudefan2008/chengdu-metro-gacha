@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="color-scheme" content="light dark">
+<style>html{background:#faf7f2}@media(prefers-color-scheme:dark){html{background:#12100d}}</style>
+<script>
+(function(){try{
+  var m=localStorage.getItem('cdgacha-theme')||'auto';
+  var dark=m==='dark'||(m==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  var r=document.documentElement;r.classList.toggle('dark',dark);
+  r.style.background=dark?'#12100d':'#faf7f2';r.style.colorScheme=dark?'dark':'light';
+}catch(e){}})();
+</script>
+<title>下一站去哪儿 — 成都地铁扭蛋｜随机选站决定你的下次出行</title>
+<meta name="description" content="从成都地铁约380座车站中随机抽一站：按线路筛选、单抽或十连，看看下一站去哪儿。附高德/百度地图直达，免费免登录。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12100d" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="下一站去哪儿 — 成都地铁扭蛋">
+<meta property="og:description" content="随机抽一座成都地铁站，在没听过的站下车走走看">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"下一站去哪儿 — 成都地铁扭蛋","description":"成都地铁随机选站扭蛋：按线路筛选，单抽或十连。","applicationCategory":"TravelApplication","operatingSystem":"Any","inLanguage":"zh-CN","offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"}}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<style>
+:root{
+  --bg:#faf7f2;--card:#ffffff;--ink:#1d1a16;--sub:#7a7267;--line:#e8e2d8;
+  --accent:#d84315;--accent-soft:#ffeee6;--shadow:0 10px 30px rgba(60,40,20,.10);
+}
+html.dark{
+  --bg:#12100d;--card:#1d1a16;--ink:#f2ede6;--sub:#9d9488;--line:#332d26;
+  --accent:#ff7043;--accent-soft:#3a241a;--shadow:0 10px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Noto Sans SC',system-ui,sans-serif;
+  background:var(--bg);color:var(--ink);
+  min-height:100vh;overflow-x:hidden;touch-action:manipulation;
+  transition:background .3s,color .3s;
+}
+.wrap{max-width:640px;margin:0 auto;padding:20px 18px 80px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.15rem;letter-spacing:.02em}
+.brand svg{width:34px;height:34px}
+#theme-btn{
+  border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:6px 14px;font-size:.8rem;cursor:pointer;
+}
+/* ---------- 结果卡片 ---------- */
+.result{
+  background:var(--card);border:1px solid var(--line);border-radius:24px;
+  box-shadow:var(--shadow);padding:44px 24px 34px;text-align:center;
+  position:relative;overflow:hidden;min-height:300px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;gap:14px;
+}
+.result::before{
+  content:"";position:absolute;inset:0 0 auto 0;height:8px;
+  background:var(--rail,#bbb);transition:background .4s;
+}
+.hint{color:var(--sub);font-size:.95rem;line-height:1.9}
+.hint .big{font-size:1.3rem}
+.station-name{font-size:2.6rem;font-weight:900;letter-spacing:.06em;line-height:1.2}
+.station-sub{color:var(--sub);font-size:.85rem;letter-spacing:.4em;margin-top:-8px}
+.line-tags{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.line-tag{
+  color:#fff;font-size:.8rem;font-weight:700;padding:4px 14px 5px;border-radius:999px;
+  box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap;
+}
+/* 老虎机滚动 */
+.slot{height:3.4em;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.slot-inner{display:flex;flex-direction:column;transition:transform .12s linear}
+.slot-inner span{height:3.4rem;display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;font-weight:900;color:var(--sub);white-space:nowrap}
+/* 十连结果 */
+.ten-list{display:none;flex-direction:column;gap:10px;width:100%}
+.ten-item{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer;
+  transition:transform .15s;
+}
+.ten-item:hover{transform:translateY(-2px)}
+.ten-item .nm{font-weight:700;font-size:1.05rem}
+.ten-item .tags{display:flex;gap:6px}
+.ten-item .lt{color:#fff;font-size:.65rem;padding:2px 8px;border-radius:999px;font-weight:700}
+/* ---------- 按钮 ---------- */
+.actions{display:flex;gap:12px;margin:20px 0}
+.btn{
+  flex:1;border:none;border-radius:16px;padding:16px;font-size:1.05rem;font-weight:900;
+  cursor:pointer;letter-spacing:.08em;transition:transform .12s,box-shadow .12s;
+  font-family:inherit;
+}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(216,67,21,.35)}
+.btn-primary:disabled{opacity:.5;cursor:wait}
+.btn-ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+/* ---------- 筛选 ---------- */
+.filters{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:18px}
+.filters h2{font-size:.85rem;color:var(--sub);font-weight:500;margin-bottom:12px;letter-spacing:.1em}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{
+  display:inline-flex;align-items:center;gap:6px;border:1.5px solid var(--line);
+  background:transparent;color:var(--ink);border-radius:999px;padding:6px 13px;
+  font-size:.82rem;cursor:pointer;font-family:inherit;transition:all .15s;
+}
+.chip .dot{width:9px;height:9px;border-radius:50%}
+.chip.on{border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.mode-row{display:flex;gap:8px;margin-bottom:14px}
+.mode{
+  flex:1;border:1.5px solid var(--line);background:transparent;color:var(--sub);
+  border-radius:12px;padding:9px;font-size:.85rem;cursor:pointer;font-family:inherit;
+}
+.mode.on{border-color:var(--accent);color:var(--accent);font-weight:700;background:var(--accent-soft)}
+/* ---------- 分享行 ---------- */
+.share-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px}
+.share-btn{
+  display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);
+  background:var(--card);color:var(--ink);border-radius:999px;padding:9px 16px;
+  font-size:.82rem;cursor:pointer;font-family:inherit;text-decoration:none;
+  transition:transform .12s;
+}
+.share-btn:hover{transform:translateY(-1px)}
+footer{text-align:center;color:var(--sub);font-size:.72rem;line-height:1.9;margin-top:34px}
+footer a{color:var(--sub)}
+/* 历史 */
+.history{margin-top:18px}
+.history h2{font-size:.85rem;color:var(--sub);font-weight:500;margin-bottom:10px;letter-spacing:.1em}
+.hist-chips{display:flex;flex-wrap:wrap;gap:8px}
+.hist-chip{
+  border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:999px;padding:6px 13px;font-size:.78rem;cursor:pointer;font-family:inherit;
+}
+/* 摇晃动画 */
+@keyframes shake{
+  0%,100%{transform:rotate(0)}10%{transform:rotate(-4deg) translateY(-3px)}
+  20%{transform:rotate(4deg)}30%{transform:rotate(-5deg) translateY(-5px)}
+  40%{transform:rotate(5deg)}50%{transform:rotate(-4deg) translateY(-3px)}
+  60%{transform:rotate(3deg)}70%{transform:rotate(-2deg)}
+  80%{transform:rotate(2deg)}90%{transform:rotate(-1deg)}
+}
+.shaking{animation:shake .6s ease-in-out infinite}
+@keyframes pop{
+  0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}
+}
+.pop{animation:pop .45s cubic-bezier(.2,.9,.3,1.2)}
+@media (prefers-reduced-motion: reduce){.shaking,.pop{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect x="6" y="4" width="36" height="30" rx="8" fill="#d84315"/>
+        <rect x="12" y="10" width="24" height="10" rx="3" fill="#fff"/>
+        <circle cx="16" cy="27" r="3" fill="#fff"/><circle cx="32" cy="27" r="3" fill="#fff"/>
+        <path d="M14 38 L10 46 M34 38 L38 46" stroke="#d84315" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      下一站去哪儿
+    </div>
+    <button id="theme-btn" type="button">🌓 主题</button>
+  </header>
+
+  <div class="result" id="result">
+    <div class="hint" id="hint-area">
+      <div style="font-size:3rem;margin-bottom:10px">🚇</div>
+      <div class="big">成都地铁 · <span id="total-n">380+</span> 座车站</div>
+      <div>随机抽一站，在没听过的站下车走走看</div>
+    </div>
+    <div class="slot" id="slot" style="display:none"><div class="slot-inner" id="slot-inner"></div></div>
+    <div id="final" style="display:none;width:100%">
+      <div class="station-name pop" id="st-name"></div>
+      <div class="station-sub" id="st-py"></div>
+      <div class="line-tags" id="st-lines"></div>
+    </div>
+    <div class="ten-list" id="ten-list"></div>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="draw-btn">🎰 抽 一 站</button>
+  </div>
+
+  <div class="share-row" id="share-row" style="display:none">
+    <a class="share-btn" id="amap-link" target="_blank" rel="noopener">🗺️ 高德地图</a>
+    <a class="share-btn" id="baidu-link" target="_blank" rel="noopener">🧭 百度地图</a>
+    <button class="share-btn" id="copy-link">🔗 复制分享链接</button>
+    <button class="share-btn" id="sys-share">📤 分享</button>
+  </div>
+
+  <div class="filters" style="margin-top:22px">
+    <div class="mode-row">
+      <button class="mode on" data-mode="single" type="button">单抽</button>
+      <button class="mode" data-mode="ten" type="button">十连抽</button>
+    </div>
+    <h2>按线路筛选（不选 = 全部线路）</h2>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="history" id="history-box" style="display:none">
+    <h2>抽选记录</h2>
+    <div class="hist-chips" id="hist-chips"></div>
+  </div>
+
+  <footer>
+    灵感来源：<a href="https://la-rikopatto.github.io/kien-sekve/" target="_blank" rel="noopener">次はどこへ — 駅ガチャ</a>（日本版）<br>
+    站点数据依据成都轨道交通官方运营线路整理（2025 年），仅供娱乐参考。<br>
+    下一站去哪儿 © 2026 · 成都地铁扭蛋
+  </footer>
+</div>
+
+<script>
+(function(){
+"use strict";
+var LINES=[], STATIONS=[], stationById=new Map();
+var mode='single', selected=new Set(), current=null, drawing=false;
+var hist=[];
+
+var $=function(id){return document.getElementById(id)};
+var result=$('result'), hintArea=$('hint-area'), slot=$('slot'), slotInner=$('slot-inner'),
+    finalBox=$('final'), stName=$('st-name'), stPy=$('st-py'), stLines=$('st-lines'),
+    tenList=$('ten-list'), drawBtn=$('draw-btn'), chipsBox=$('chips'),
+    shareRow=$('share-row'), amapLink=$('amap-link'), baiduLink=$('baidu-link');
+
+/* ---------- 主题 ---------- */
+var tm=localStorage.getItem('cdgacha-theme')||'auto';
+$('theme-btn').addEventListener('click',function(){
+  tm=tm==='auto'?'light':(tm==='light'?'dark':'auto');
+  try{localStorage.setItem('cdgacha-theme',tm)}catch(e){}
+  var dark=tm==='dark'||(tm==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);
+  document.documentElement.classList.toggle('dark',dark);
+  document.documentElement.style.background=dark?'#12100d':'#faf7f2';
+});
+
+/* ---------- 数据 ---------- */
+fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
+  LINES=lines;
+  var seen=new Map();
+  lines.forEach(function(line){
+    line.stations.forEach(function(name){
+      if(!seen.has(name)) seen.set(name,{id:'s'+seen.size,name:name,lines:[]});
+      seen.get(name).lines.push(line);
+    });
+  });
+  STATIONS=Array.from(seen.values());
+  STATIONS.forEach(function(s){stationById.set(s.id,s)});
+  $('total-n').textContent=STATIONS.length;
+  buildChips();
+  /* 分享链接 ?station=sNN */
+  try{
+    var q=new URLSearchParams(location.search).get('station');
+    var st=q&&stationById.get(q);
+    if(st){showStation(st);history.replaceState(null,'',location.pathname)}
+  }catch(e){}
+  loadHist();
+}).catch(function(){
+  hintArea.innerHTML='<div class="big">⚠️ 数据加载失败</div><div>请通过 http(s) 访问（本地双击打开会被浏览器拦截）</div>';
+});
+
+/* ---------- 线路筛选 ---------- */
+function buildChips(){
+  LINES.forEach(function(line){
+    var b=document.createElement('button');
+    b.type='button';b.className='chip';
+    b.innerHTML='<span class="dot" style="background:'+line.color+'"></span>'+line.name;
+    b.addEventListener('click',function(){
+      if(selected.has(line.code)){selected.delete(line.code);b.classList.remove('on')}
+      else{selected.add(line.code);b.classList.add('on')}
+    });
+    chipsBox.appendChild(b);
+  });
+}
+
+/* ---------- 模式 ---------- */
+document.querySelectorAll('.mode').forEach(function(b){
+  b.addEventListener('click',function(){
+    mode=b.dataset.mode;
+    document.querySelectorAll('.mode').forEach(function(x){x.classList.toggle('on',x===b)});
+    drawBtn.textContent=mode==='ten'?'🎰 十 连 抽':'🎰 抽 一 站';
+  });
+});
+
+/* ---------- 抽选 ---------- */
+function pool(){
+  if(!selected.size) return STATIONS;
+  return STATIONS.filter(function(s){return s.lines.some(function(l){return selected.has(l.code)})});
+}
+function randInt(n){
+  if(window.crypto&&crypto.getRandomValues){
+    var a=new Uint32Array(1);crypto.getRandomValues(a);
+    return a[0]%n;
+  }
+  return Math.floor(Math.random()*n);
+}
+function pick(p){return p[randInt(p.length)]}
+
+drawBtn.addEventListener('click',function(){
+  if(drawing||!STATIONS.length)return;
+  var p=pool();
+  if(!p.length){hintArea.innerHTML='<div class="big">所选线路下没有车站</div>';return}
+  drawing=true;drawBtn.disabled=true;
+  hintArea.style.display='none';finalBox.style.display='none';tenList.style.display='none';
+  shareRow.style.display='none';
+  result.classList.add('shaking');
+  if(mode==='ten'){drawTen(p)}else{drawOne(p)}
+});
+
+/* 老虎机 */
+var slotTimer=null;
+function startSlot(p){
+  slot.style.display='flex';slotInner.innerHTML='';
+  var names=[];
+  for(var i=0;i<24;i++)names.push(pick(p).name);
+  names.forEach(function(n){var s=document.createElement('span');s.textContent=n;slotInner.appendChild(s)});
+  var idx=0;
+  slotInner.style.transform='translateY(0)';
+  slotTimer=setInterval(function(){
+    idx=(idx+1)%names.length;
+    slotInner.style.transform='translateY(-'+(idx*3.4)+'rem)';
+  },70);
+}
+function stopSlot(cb){
+  clearInterval(slotTimer);
+  slot.style.display='none';
+  result.classList.remove('shaking');
+  cb();
+}
+function reduceMotion(){return matchMedia('(prefers-reduced-motion: reduce)').matches}
+
+function drawOne(p){
+  var target=pick(p);
+  if(reduceMotion()){showStation(target);finish();return}
+  startSlot(p);
+  setTimeout(function(){stopSlot(function(){showStation(target);finish()})},1400+Math.random()*500);
+}
+function drawTen(p){
+  var res=[];
+  if(p.length>=10){
+    var bag=p.slice();
+    for(var i=0;i<10;i++){res.push(bag.splice(randInt(bag.length),1)[0])}
+  }else{
+    for(var j=0;j<10;j++)res.push(pick(p));
+  }
+  if(reduceMotion()){showTen(res);finish();return}
+  startSlot(p);
+  setTimeout(function(){stopSlot(function(){showTen(res);finish()})},1600+Math.random()*500);
+}
+function finish(){drawing=false;drawBtn.disabled=false}
+
+/* ---------- 展示 ---------- */
+function showStation(s,fromHist){
+  current=s;
+  slot.style.display='none';tenList.style.display='none';hintArea.style.display='none';
+  finalBox.style.display='block';
+  stName.textContent=s.name;
+  stPy.textContent='CHENGDU METRO';
+  stLines.innerHTML='';
+  s.lines.forEach(function(l){
+    var t=document.createElement('span');t.className='line-tag';
+    t.style.background=l.color;t.textContent=l.name;
+    stLines.appendChild(t);
+  });
+  result.style.setProperty('--rail',s.lines[0].color);
+  /* 重触发 pop 动画 */
+  stName.classList.remove('pop');void stName.offsetWidth;stName.classList.add('pop');
+  setupShare(s);
+  if(!fromHist)pushHist(s);
+}
+function showTen(list){
+  current=null;finalBox.style.display='none';hintArea.style.display='none';
+  tenList.style.display='flex';tenList.innerHTML='';
+  var first=list[0];
+  result.style.setProperty('--rail',first.lines[0].color);
+  list.forEach(function(s){
+    var d=document.createElement('div');d.className='ten-item';
+    var tags=s.lines.map(function(l){
+      return '<span class="lt" style="background:'+l.color+'">'+l.name+'</span>';
+    }).join('');
+    d.innerHTML='<span class="nm">'+s.name+'</span><span class="tags">'+tags+'</span>';
+    d.addEventListener('click',function(){showStation(s)});
+    tenList.appendChild(d);
+  });
+  setupShare(first);
+  pushHist(first);
+}
+function setupShare(s){
+  shareRow.style.display='flex';
+  var q=encodeURIComponent(s.name+'地铁站 成都');
+  amapLink.href='https://uri.amap.com/search?keyword='+q+'&city=成都';
+  baiduLink.href='https://map.baidu.com/search/'+encodeURIComponent(s.name+'地铁站')+'/@11580000,3560000,12z';
+  $('copy-link').onclick=function(){
+    var url=location.origin+location.pathname+'?station='+s.id;
+    (navigator.clipboard?navigator.clipboard.writeText(url):Promise.reject()).then(function(){
+      $('copy-link').textContent='✅ 已复制';
+      setTimeout(function(){$('copy-link').textContent='🔗 复制分享链接'},1500);
+    }).catch(function(){prompt('复制链接：',url)});
+  };
+  $('sys-share').onclick=function(){
+    var url=location.origin+location.pathname+'?station='+s.id;
+    if(navigator.share){navigator.share({title:'下一站去哪儿',text:'我抽到了「'+s.name+'」站！',url:url}).catch(function(){})}
+    else{$('copy-link').click()}
+  };
+}
+
+/* ---------- 历史 ---------- */
+function loadHist(){
+  try{hist=JSON.parse(localStorage.getItem('cdgacha-hist')||'[]')}catch(e){hist=[]}
+  renderHist();
+}
+function pushHist(s){
+  hist=hist.filter(function(id){return id!==s.id});
+  hist.unshift(s.id);hist=hist.slice(0,12);
+  try{localStorage.setItem('cdgacha-hist',JSON.stringify(hist))}catch(e){}
+  renderHist();
+}
+function renderHist(){
+  if(!hist.length){$('history-box').style.display='none';return}
+  $('history-box').style.display='block';
+  var box=$('hist-chips');box.innerHTML='';
+  hist.forEach(function(id){
+    var s=stationById.get(id);if(!s)return;
+    var b=document.createElement('button');b.type='button';b.className='hist-chip';
+    b.textContent=s.name;
+    b.addEventListener('click',function(){showStation(s,true)});
+    box.appendChild(b);
+  });
+}
+})();
+</script>
+</body>
+</html>

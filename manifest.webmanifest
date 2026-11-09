@@ -1,0 +1,13 @@
+{
+  "name": "下一站去哪儿 — 成都地铁扭蛋",
+  "short_name": "地铁扭蛋",
+  "description": "随机抽一座成都地铁站，决定下次去哪儿",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#faf7f2",
+  "theme_color": "#d84315",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
