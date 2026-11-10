@@ -153,6 +153,22 @@ footer a{color:var(--sub)}
   border:1px solid var(--line);background:var(--card);color:var(--ink);
   border-radius:999px;padding:6px 13px;font-size:.78rem;cursor:pointer;font-family:inherit;
 }
+/* ---------- 出行挑战卡 ---------- */
+.challenge{
+  display:none;width:100%;max-width:440px;position:relative;overflow:hidden;
+  margin-top:6px;padding:16px 16px 12px;text-align:left;
+  border:1px solid var(--line);border-radius:18px;background:var(--bg);
+  border-left:4px solid var(--rail,var(--accent));
+}
+.challenge.appear{animation:fade-up .4s .18s ease-out both}
+.challenge-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+.challenge-label{font-size:.78rem;font-weight:900;letter-spacing:.08em;color:var(--accent)}
+.challenge-reroll{border:0;background:transparent;color:var(--sub);font:inherit;font-size:.75rem;cursor:pointer;padding:4px 0}
+.challenge-reroll:hover{color:var(--accent)}
+.challenge-text{font-size:1.02rem;font-weight:700;line-height:1.7;min-height:1.7em}
+.challenge-foot{display:flex;justify-content:space-between;gap:10px;margin-top:8px;color:var(--sub);font-size:.7rem}
+.challenge-station{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:420px){.challenge{padding:14px 13px 10px}.challenge-text{font-size:.95rem}}
 /* 摇晃动画 */
 @keyframes shake{
   0%,100%{transform:rotate(0)}10%{transform:rotate(-4deg) translateY(-3px)}
@@ -217,6 +233,10 @@ footer a{color:var(--sub)}
 .tt-swipe{font-size:1.8rem;color:var(--accent);position:absolute;right:-6px;animation:swipe-hand 2s ease-in-out infinite}
 .tt-links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:250px}
 .tt-links span{border:1px solid var(--line);padding:9px 12px;border-radius:999px;font-size:.74rem}
+.tt-challenge{width:230px;border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:16px;padding:16px;text-align:left;background:var(--bg)}
+.tt-challenge b{display:block;color:var(--accent);font-size:.76rem;margin-bottom:10px}
+.tt-challenge p{color:var(--ink)!important;font-size:.92rem!important;line-height:1.7!important}
+.tt-challenge small{display:block;margin-top:12px;color:var(--sub);font-size:.7rem}
 .tt-history{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:240px}
 .tt-history span{padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:.76rem}
 @keyframes tap{0%,30%{opacity:0;transform:scale(.5)}45%{opacity:1}80%,100%{opacity:0;transform:scale(1.4)}}
@@ -262,6 +282,14 @@ footer a{color:var(--sub)}
     <button class="btn btn-primary" id="draw-btn">🎰 抽 一 站</button>
   </div>
 
+  <section class="challenge" id="challenge" aria-label="本次出行挑战">
+    <div class="challenge-top">
+      <span class="challenge-label">🎲 出行挑战卡</span>
+      <button class="challenge-reroll" id="challenge-reroll" type="button" aria-label="换一个出行挑战">↻ 换一张</button>
+    </div>
+    <div class="challenge-text" id="challenge-text" role="status" aria-live="polite"></div>
+    <div class="challenge-foot"><span class="challenge-station" id="challenge-station"></span><span>出站慢游 · 量力而行</span></div>
+  </section>
   <div class="share-row" id="share-row" style="display:none">
     <a class="share-btn" id="wiki-link" target="_blank" rel="noopener">📖 百度百科</a>
     <a class="share-btn" id="amap-link" target="_blank" rel="noopener">🗺️ 高德地图</a>
@@ -319,6 +347,11 @@ footer a{color:var(--sub)}
         <p>结果卡展示中文站名、官方英文和途经线路。换乘站会合并显示多条线路标签，顶部色带与首条线路的代表色一致。</p>
       </div>
       <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-challenge"><b>🎲 出行挑战卡 ↻</b><p>选一个没去过的出口出站，沿街慢慢走 15 分钟，再决定下一站。</p><small>📍 春熙路 · 探索</small></div></div>
+        <h2>随机一站，再随机一个任务</h2>
+        <p>查看单站卡片时，会附上一张探索、观察或美食挑战。不喜欢可以点「↻ 换一张」，系统分享也会带上任务。十连列表点击任意一站即可查看对应挑战。</p>
+      </div>
+      <div class="tt-slide">
         <div class="tt-fig"><div class="tt-links"><span>📖 百度百科</span><span>🗺️ 高德地图</span><span>🧭 百度地图</span><span>🔗 复制分享链接</span><span>📤 分享</span></div></div>
         <h2>查百科、开地图、分享下一站</h2>
         <p>抽中后可打开该站的百度百科或地图。复制分享链接，朋友打开就能看到同一座车站；支持系统分享的设备也可直接调用分享面板。</p>
@@ -338,7 +371,7 @@ footer a{color:var(--sub)}
 (function(){
 "use strict";
 var LINES=[], STATIONS=[], stationById=new Map();
-var mode='single', selected=new Set(), current=null, drawing=false;
+var mode='single', selected=new Set(), current=null, currentChallenge=null, drawing=false;
 var hist=[];
 
 var $=function(id){return document.getElementById(id)};
@@ -439,6 +472,7 @@ drawBtn.addEventListener('click',function(){
   drawBtn.textContent=mode==='ten'?'🚇 正在抽选 10 站…':'🚇 正在寻找下一站…';
   hintArea.style.display='none';finalBox.style.display='none';tenList.style.display='none';
   shareRow.style.display='none';
+  $('challenge').style.display='none';current=null;currentChallenge=null;
   result.classList.add('shaking');
   if(mode==='ten'){drawTen(p)}else{drawOne(p)}
 });
@@ -492,6 +526,46 @@ function finish(){
 }
 
 /* ---------- 展示 ---------- */
+/* ---------- 出行挑战卡：探索、观察、美食，每组 8 条 ---------- */
+var CHALLENGES=[
+  {tag:'探索',text:'选一个没去过的出口出站，沿街慢慢走 15 分钟，再决定下一站。'},
+  {tag:'探索',text:'以这一站为起点，找一处附近没去过的地方，走一条不熟悉的路。'},
+  {tag:'探索',text:'不看点评，凭直觉选一家街边小店，进去看看菜单。'},
+  {tag:'探索',text:'从这一站走到下一站；觉得太远，就只走到街区的另一个方向。'},
+  {tag:'探索',text:'随机挑一个方向走 10 分钟，用 3 个词记录这里给你的感觉。'},
+  {tag:'探索',text:'找一处安静的地方坐 5 分钟，留意这里与市中心不同的节奏。'},
+  {tag:'探索',text:'把这一站当作散步起点，找一家便利店、一座公园或一条有意思的街。'},
+  {tag:'探索',text:'今天不设目的地：出站后遇到第一个感兴趣的路口就转弯。'},
+  {tag:'观察',text:'选一个安全、不妨碍通行的位置，抬头找出 3 种不同的建筑颜色。'},
+  {tag:'观察',text:'拍一张只有线条和颜色的照片，用照片给这个街区留一张抽象肖像。'},
+  {tag:'观察',text:'找一家门头有年代感的小店，记下它的店名，不用特意进去消费。'},
+  {tag:'观察',text:'沿途找 3 个有意思的小细节：一棵树、一块招牌，或一扇特别的窗。'},
+  {tag:'观察',text:'找一处理想拍照位，等一个没有匆忙赶路的瞬间，再按下快门。'},
+  {tag:'观察',text:'数一数沿途经过的桥、河或水渠；没有水系，就找 3 处街角绿意。'},
+  {tag:'观察',text:'用一个主题收集 3 张照片：圆形、红色，或“只有本地人才懂”。'},
+  {tag:'观察',text:'留意身边的声音，记下最特别的一种，猜猜它来自哪里。'},
+  {tag:'美食',text:'在附近找一家本地人光顾的小吃店，点一份自己没吃过的。'},
+  {tag:'美食',text:'找一家生意不错的小店，点招牌菜；忌口或过敏就安心换一家。'},
+  {tag:'美食',text:'找一家开了有些年头的老店，观察食客们最常点的是什么。'},
+  {tag:'美食',text:'用一杯饮品开启这次散步，选一家与平时不同风格的小店。'},
+  {tag:'美食',text:'沿路寻找一种成都小吃，慢慢品尝，不赶时间。'},
+  {tag:'美食',text:'请店主推荐一道菜；没有想吃的，就把任务换成买一份本地水果。'},
+  {tag:'美食',text:'避开连锁品牌，选一家独立小店，给这次出行留一个味觉记忆。'},
+  {tag:'美食',text:'找一家有座位的小店，坐下来吃一样东西，顺便观察街上来往的人。'}
+];
+var challengeBox=$('challenge'),challengeText=$('challenge-text'),lastChallenge=-1;
+function renderChallenge(s,reroll){
+  if(!s){challengeBox.style.display='none';currentChallenge=null;return}
+  var index;
+  do{index=randInt(CHALLENGES.length)}while(reroll&&CHALLENGES.length>1&&index===lastChallenge);
+  lastChallenge=index;currentChallenge=CHALLENGES[index];
+  challengeText.textContent=currentChallenge.text;
+  $('challenge-station').textContent='📍 '+s.name+' · '+currentChallenge.tag;
+  $('challenge-reroll').setAttribute('aria-label','在'+s.name+'换一个出行挑战');
+  challengeBox.style.display='block';
+  challengeBox.classList.remove('appear');void challengeBox.offsetWidth;challengeBox.classList.add('appear');
+}
+$('challenge-reroll').addEventListener('click',function(){if(current)renderChallenge(current,true)});
 function showStation(s,fromHist){
   current=s;
   slot.style.display='none';tenList.style.display='none';hintArea.style.display='none';
@@ -509,11 +583,12 @@ function showStation(s,fromHist){
   result.style.setProperty('--rail',s.lines[0].color);
   result.classList.remove('glowing');void result.offsetWidth;result.classList.add('glowing');
   finalBox.classList.remove('revealing');void finalBox.offsetWidth;finalBox.classList.add('revealing');
+  renderChallenge(s);
   setupShare(s);
   if(!fromHist)pushHist(s);
 }
 function showTen(list){
-  current=null;finalBox.style.display='none';hintArea.style.display='none';
+  current=null;currentChallenge=null;challengeBox.style.display='none';finalBox.style.display='none';hintArea.style.display='none';
   tenList.style.display='flex';tenList.innerHTML='';
   var first=list[0];
   result.style.setProperty('--rail',first.lines[0].color);
@@ -549,7 +624,8 @@ function setupShare(s){
   };
   $('sys-share').onclick=function(){
     var url=location.origin+location.pathname+'?station='+s.id;
-    if(navigator.share){navigator.share({title:'下一站去哪儿',text:'我抽到了「'+s.name+'」站！',url:url}).catch(function(){})}
+    var text='我抽到了「'+s.name+'」站！'+(current===s&&currentChallenge?' 本次挑战：'+currentChallenge.text:'');
+    if(navigator.share){navigator.share({title:'下一站去哪儿 · '+s.name,text:text,url:url}).catch(function(){})}
     else{$('copy-link').click()}
   };
 }
