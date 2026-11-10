@@ -46,10 +46,12 @@ body{
 header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:900;font-size:1.15rem;letter-spacing:.02em}
 .brand svg{width:34px;height:34px}
-#theme-btn{
+.header-actions{display:flex;gap:8px}
+#theme-btn,.help-btn{
   border:1px solid var(--line);background:var(--card);color:var(--ink);
-  border-radius:999px;padding:6px 14px;font-size:.8rem;cursor:pointer;
+  border-radius:999px;padding:6px 14px;font-size:.8rem;cursor:pointer;font-family:inherit;
 }
+.help-btn{display:inline-flex;align-items:center;gap:5px}
 /* ---------- 结果卡片 ---------- */
 .result{
   background:var(--card);border:1px solid var(--line);border-radius:24px;
@@ -70,11 +72,29 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
   color:#fff;font-size:.8rem;font-weight:700;padding:4px 14px 5px;border-radius:999px;
   box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap;
 }
-/* 老虎机滚动 */
-.slot{height:3.4em;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.slot-inner{display:flex;flex-direction:column;transition:transform .12s linear}
-.slot-inner span{height:3.4rem;display:flex;align-items:center;justify-content:center;
-  font-size:2.2rem;font-weight:900;color:var(--sub);white-space:nowrap}
+/* 滚动与揭示：只做 transform/opacity 动画，避免整页和文字跳动 */
+.slot{height:5.4rem;overflow:hidden;display:flex;align-items:center;justify-content:center;
+  position:relative;width:100%;max-width:440px;
+  -webkit-mask-image:linear-gradient(transparent,#000 27%,#000 73%,transparent);
+  mask-image:linear-gradient(transparent,#000 27%,#000 73%,transparent);
+}
+.slot-inner{display:flex;flex-direction:column;will-change:transform}
+.slot-inner span{height:3.6rem;flex:0 0 3.6rem;display:flex;align-items:center;justify-content:center;
+  font-size:2rem;font-weight:900;color:var(--ink);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.slot.is-ten .slot-inner span{font-size:1.45rem;color:var(--sub)}
+#final.revealing{animation:result-in .5s cubic-bezier(.2,.8,.2,1) both}
+.line-tag{animation:badge-in .35s ease-out both}
+.line-tag:nth-child(2){animation-delay:.07s}.line-tag:nth-child(3){animation-delay:.14s}
+.share-row.appear{animation:fade-up .35s .12s ease-out both}
+.ten-item.reveal{animation:fade-up .38s calc(var(--i)*55ms) cubic-bezier(.2,.8,.2,1) both}
+.result.glowing::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  box-shadow:inset 0 0 0 2px var(--rail);animation:ring-out .85s ease-out both;
+}
+@keyframes result-in{0%{opacity:0;transform:translateY(16px) scale(.94)}65%{opacity:1;transform:translateY(-2px) scale(1.015)}100%{opacity:1;transform:none}}
+@keyframes badge-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes fade-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ring-out{0%{opacity:.7}100%{opacity:0}}
 /* 十连结果 */
 .ten-list{display:none;flex-direction:column;gap:10px;width:100%}
 .ten-item{
@@ -142,11 +162,67 @@ footer a{color:var(--sub)}
   80%{transform:rotate(2deg)}90%{transform:rotate(-1deg)}
 }
 .shaking{animation:shake .6s ease-in-out infinite}
-@keyframes pop{
-  0%{transform:scale(.6);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}
+/* 抽选揭示动画 */
+#final.revealing{animation:result-in .5s cubic-bezier(.2,.8,.2,1) both}
+.line-tag{animation:badge-in .35s ease-out both}
+.line-tag:nth-child(2){animation-delay:.07s}.line-tag:nth-child(3){animation-delay:.14s}
+.share-row.appear{animation:fade-up .35s .12s ease-out both}
+.ten-item.reveal{animation:fade-up .38s calc(var(--i)*55ms) cubic-bezier(.2,.8,.2,1) both}
+.result.glowing::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  box-shadow:inset 0 0 0 2px var(--rail);animation:ring-out .85s ease-out both;
 }
-.pop{animation:pop .45s cubic-bezier(.2,.9,.3,1.2)}
-@media (prefers-reduced-motion: reduce){.shaking,.pop{animation:none}}
+@keyframes result-in{0%{opacity:0;transform:translateY(16px) scale(.94)}65%{opacity:1;transform:translateY(-2px) scale(1.015)}100%{opacity:1;transform:none}}
+@keyframes badge-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@keyframes fade-up{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes ring-out{0%{opacity:.7}100%{opacity:0}}
+/* ---------- 使用说明（与原参考项目相同的分页引导） ---------- */
+.tutorial[hidden]{display:none}
+.tutorial{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
+.tt-backdrop{position:absolute;inset:0;background:rgba(18,15,12,.48);opacity:0;transition:opacity .28s;backdrop-filter:blur(4px)}
+.tt-panel{position:relative;width:100%;max-width:420px;max-height:calc(100dvh - 40px);overflow-y:auto;
+  border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 24px 60px rgba(0,0,0,.25);
+  opacity:0;transform:translateY(16px) scale(.97);transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .25s}
+.tutorial.on .tt-backdrop{opacity:1}.tutorial.on .tt-panel{opacity:1;transform:none}
+#tt-skip{position:absolute;top:12px;right:14px;z-index:2;border:0;background:transparent;font:inherit;font-size:.8rem;font-weight:700;color:var(--sub);padding:8px;cursor:pointer}
+.tt-track{display:flex;transition:transform .38s cubic-bezier(.2,.85,.25,1);touch-action:pan-y}
+.tt-slide{flex:0 0 100%;min-width:0;padding:34px 28px 12px;text-align:center}
+.tt-fig{height:164px;margin:0 auto 18px;display:flex;align-items:center;justify-content:center;position:relative}
+.tt-slide h2{font-size:1.2rem;font-weight:900;margin-bottom:10px}
+.tt-slide p{font-size:.88rem;line-height:1.8;color:var(--sub);text-align:left}
+.tt-dots{display:flex;justify-content:center;gap:6px;padding:16px 0 6px}
+.tt-dots button{width:7px;height:7px;padding:0;border:0;border-radius:5px;background:var(--line);transition:width .25s,background .25s;cursor:pointer}
+.tt-dots button.on{width:22px;background:var(--accent)}
+.tt-nav{display:flex;gap:10px;padding:12px 20px 22px}
+.tt-nav button{flex:1;border:0;border-radius:12px;padding:12px;font:inherit;font-size:.88rem;font-weight:700;cursor:pointer}
+#tt-prev{background:var(--accent-soft);color:var(--sub)}
+#tt-next{background:var(--accent);color:#fff;flex:2}
+#tt-prev:disabled{opacity:.4}
+.tt-icon{width:108px;height:108px;border-radius:26px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow)}
+.tt-icon svg{width:72px;height:72px}
+.tt-filters{display:flex;flex-direction:column;gap:10px;width:230px}
+.tt-chip{border:1.5px solid var(--line);border-radius:999px;padding:9px 13px;font-size:.8rem;text-align:left;display:flex;align-items:center;gap:8px;color:var(--sub)}
+.tt-chip.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.tt-dot{width:9px;height:9px;border-radius:50%;flex:none}
+.tt-demo-card{width:220px;padding:24px 16px;border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);background:var(--card);display:flex;flex-direction:column;align-items:center;gap:12px}
+.tt-demo-card b{font-size:1.55rem}.tt-demo-card small{font-size:.65rem;color:var(--sub)}
+.tt-demo-line{color:#fff;background:#EB5A35;border-radius:999px;padding:4px 12px;font-size:.7rem;font-weight:700}
+.tt-modes{display:flex;gap:6px;width:230px}.tt-modes span{flex:1;padding:8px 0;border:1.5px solid var(--line);border-radius:10px;font-size:.78rem;color:var(--sub)}
+.tt-modes span.on{color:var(--accent);border-color:var(--accent);background:var(--accent-soft);font-weight:700}
+.tt-ten{display:flex;flex-direction:column;gap:7px;width:220px}
+.tt-ten span{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);padding:8px 12px;border-radius:10px;font-size:.78rem;animation:fade-up .4s both}
+.tt-ten span:nth-child(2){animation-delay:.15s}.tt-ten span:nth-child(3){animation-delay:.3s}
+.tt-ten i{width:7px;height:7px;border-radius:50%;background:#98C51A}
+.tt-tap{position:absolute;width:26px;height:26px;border:2px solid var(--accent);border-radius:50%;animation:tap 2s ease-out infinite}
+.tt-swipe{font-size:1.8rem;color:var(--accent);position:absolute;right:-6px;animation:swipe-hand 2s ease-in-out infinite}
+.tt-links{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;width:250px}
+.tt-links span{border:1px solid var(--line);padding:9px 12px;border-radius:999px;font-size:.74rem}
+.tt-history{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:240px}
+.tt-history span{padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:.76rem}
+@keyframes tap{0%,30%{opacity:0;transform:scale(.5)}45%{opacity:1}80%,100%{opacity:0;transform:scale(1.4)}}
+@keyframes swipe-hand{0%,20%,80%,100%{transform:translateX(0);opacity:0}40%,65%{transform:translateX(-28px);opacity:1}}
+@media(max-width:420px){.wrap{padding-left:14px;padding-right:14px}.brand{font-size:1rem}.header-actions{gap:5px}#theme-btn,.help-btn{padding:6px 10px}.tutorial{padding:12px}.tt-panel{max-height:calc(100dvh - 24px)}.tt-slide{padding-left:24px;padding-right:24px}}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}.slot{-webkit-mask-image:none;mask-image:none}}
 </style>
 </head>
 <body>
@@ -161,7 +237,10 @@ footer a{color:var(--sub)}
       </svg>
       下一站去哪儿
     </div>
-    <button id="theme-btn" type="button">🌓 主题</button>
+    <div class="header-actions">
+      <button class="help-btn" id="help-btn" type="button" aria-haspopup="dialog">？ 使用说明</button>
+      <button id="theme-btn" type="button" aria-label="切换主题">🌓 主题</button>
+    </div>
   </header>
 
   <div class="result" id="result">
@@ -171,8 +250,8 @@ footer a{color:var(--sub)}
       <div>随机抽一站，在没听过的站下车走走看</div>
     </div>
     <div class="slot" id="slot" style="display:none"><div class="slot-inner" id="slot-inner"></div></div>
-    <div id="final" style="display:none;width:100%">
-      <div class="station-name pop" id="st-name"></div>
+    <div id="final" role="status" aria-live="polite" style="display:none;width:100%">
+      <div class="station-name" id="st-name"></div>
       <div class="station-sub" id="st-py"></div>
       <div class="line-tags" id="st-lines"></div>
     </div>
@@ -211,6 +290,48 @@ footer a{color:var(--sub)}
     暂未开通、暂停运营站及仅供换乘的天府站不参与抽选。线路及运营状态请以成都轨道集团公告为准。<br>
     下一站去哪儿 © 2026 · 成都地铁扭蛋
   </footer>
+</div>
+
+<div class="tutorial" id="tutorial" hidden>
+  <div class="tt-backdrop" id="tt-backdrop"></div>
+  <section class="tt-panel" role="dialog" aria-modal="true" aria-labelledby="tt-title" tabindex="-1">
+    <button type="button" id="tt-skip" aria-label="关闭使用说明">跳过</button>
+    <h2 id="tt-title" style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">使用说明</h2>
+    <div class="tt-track" id="tt-track">
+      <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-icon"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="4" width="36" height="30" rx="8" fill="#d84315"/><rect x="12" y="10" width="24" height="10" rx="3" fill="#fff"/><circle cx="16" cy="27" r="3" fill="#fff"/><circle cx="32" cy="27" r="3" fill="#fff"/><path d="M14 38 L10 46 M34 38 L38 46" stroke="#d84315" stroke-width="4" stroke-linecap="round"/></svg></div></div>
+        <h2>下一站，交给扭蛋</h2>
+        <p>从成都轨道交通的数百座车站里随机选一站。没有目的地也没关系，抽一站，去没听过的地方走走看。</p>
+      </div>
+      <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-filters"><div class="tt-chip"><i class="tt-dot" style="background:#28286E"></i>全部线路（不筛选）</div><div class="tt-chip on"><i class="tt-dot" style="background:#EB5A35"></i>2号线 ✓</div><div class="tt-chip on"><i class="tt-dot" style="background:#98C51A"></i>8号线 ✓</div></div><i class="tt-tap" style="right:60px;bottom:26px"></i></div>
+        <h2>选线路，缩小抽选范围</h2>
+        <p>点击线路按钮即可筛选，可同时选择多条线路；再次点击取消。不选择任何线路时，从全部可抽车站中随机抽取。未开通站和仅供换乘的天府站不参与抽选。</p>
+      </div>
+      <div class="tt-slide">
+        <div class="tt-fig"><div><div class="tt-modes"><span class="on">单抽</span><span>十连抽</span></div><div class="tt-ten" style="margin-top:12px"><span>春熙路 <i></i></span><span>东大路 <i></i></span><span>倪家桥 <i></i></span></div></div></div>
+        <h2>单抽或十连，一次决定</h2>
+        <p>选择「单抽」或「十连抽」，再点击橙色按钮。十连结果会依次展开，点击其中任意一站，就能查看它的完整站点卡片。</p>
+      </div>
+      <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-demo-card"><b>春熙路</b><small>Chunxi Road</small><span class="tt-demo-line">2号线</span></div><span class="tt-swipe">☝</span></div>
+        <h2>中英文站名与换乘线路</h2>
+        <p>结果卡展示中文站名、官方英文和途经线路。换乘站会合并显示多条线路标签，顶部色带与首条线路的代表色一致。</p>
+      </div>
+      <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-links"><span>📖 百度百科</span><span>🗺️ 高德地图</span><span>🧭 百度地图</span><span>🔗 复制分享链接</span><span>📤 分享</span></div></div>
+        <h2>查百科、开地图、分享下一站</h2>
+        <p>抽中后可打开该站的百度百科或地图。复制分享链接，朋友打开就能看到同一座车站；支持系统分享的设备也可直接调用分享面板。</p>
+      </div>
+      <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-history"><span>春熙路</span><span>海桐街</span><span>兰家沟</span><span>文殊院</span></div></div>
+        <h2>回看记录，随时重看说明</h2>
+        <p>最近抽中的车站保存在本机浏览器中，点击「抽选记录」里的站名即可回看。点右上角「？ 使用说明」可重新打开本引导；「🌓 主题」可切换浅色、深色或跟随系统。</p>
+      </div>
+    </div>
+    <div class="tt-dots" id="tt-dots" aria-label="说明页码"></div>
+    <div class="tt-nav"><button type="button" id="tt-prev">上一步</button><button type="button" id="tt-next">下一步</button></div>
+  </section>
 </div>
 
 <script>
@@ -277,6 +398,7 @@ function buildChips(){
     b.type='button';b.className='chip';
     b.innerHTML='<span class="dot" style="background:'+line.color+'"></span>'+line.name;
     b.addEventListener('click',function(){
+      if(drawing)return;
       if(selected.has(line.code)){selected.delete(line.code);b.classList.remove('on')}
       else{selected.add(line.code);b.classList.add('on')}
     });
@@ -287,6 +409,7 @@ function buildChips(){
 /* ---------- 模式 ---------- */
 document.querySelectorAll('.mode').forEach(function(b){
   b.addEventListener('click',function(){
+    if(drawing)return;
     mode=b.dataset.mode;
     document.querySelectorAll('.mode').forEach(function(x){x.classList.toggle('on',x===b)});
     drawBtn.textContent=mode==='ten'?'🎰 十 连 抽':'🎰 抽 一 站';
@@ -312,40 +435,45 @@ drawBtn.addEventListener('click',function(){
   if(drawing||!STATIONS.length)return;
   var p=pool();
   if(!p.length){hintArea.innerHTML='<div class="big">所选线路下没有车站</div>';return}
-  drawing=true;drawBtn.disabled=true;
+  drawing=true;drawBtn.disabled=true;drawBtn.setAttribute('aria-busy','true');
+  drawBtn.textContent=mode==='ten'?'🚇 正在抽选 10 站…':'🚇 正在寻找下一站…';
   hintArea.style.display='none';finalBox.style.display='none';tenList.style.display='none';
   shareRow.style.display='none';
   result.classList.add('shaking');
   if(mode==='ten'){drawTen(p)}else{drawOne(p)}
 });
 
-/* 老虎机 */
-var slotTimer=null;
-function startSlot(p){
-  slot.style.display='flex';slotInner.innerHTML='';
-  var names=[];
-  for(var i=0;i<24;i++)names.push(pick(p).name);
-  names.forEach(function(n){var s=document.createElement('span');s.textContent=n;slotInner.appendChild(s)});
-  var idx=0;
-  slotInner.style.transform='translateY(0)';
-  slotTimer=setInterval(function(){
-    idx=(idx+1)%names.length;
-    slotInner.style.transform='translateY(-'+(idx*3.4)+'rem)';
-  },70);
-}
-function stopSlot(cb){
-  clearInterval(slotTimer);
-  slot.style.display='none';
-  result.classList.remove('shaking');
-  cb();
-}
+/* requestAnimationFrame 连续滚动，后段减速并准确停在目标站 */
+var slotFrame=0;
 function reduceMotion(){return matchMedia('(prefers-reduced-motion: reduce)').matches}
-
+function startSlot(p,targets,cb){
+  cancelAnimationFrame(slotFrame);
+  slot.classList.toggle('is-ten',targets.length>1);
+  slot.style.display='flex';slotInner.innerHTML='';
+  var base=p.slice();
+  for(var i=base.length-1;i>0;i--){var j=randInt(i+1),tmp=base[i];base[i]=base[j];base[j]=tmp}
+  var names=[],steps=36+targets.length;
+  for(var k=0;k<steps;k++)names.push(base[k%base.length].name);
+  targets.forEach(function(s){names.push(s.name)});
+  names.forEach(function(n){var s=document.createElement('span');s.textContent=n;slotInner.appendChild(s)});
+  var row=57.6,end=names.length-1,duration=1550+targets.length*40,start=0;
+  slotInner.style.transform='translateY(0px)';
+  function frame(now){
+    if(!start)start=now;
+    var t=Math.min(1,(now-start)/duration),progress=1-Math.pow(1-t,3);
+    slotInner.style.transform='translateY('+(-end*row*progress)+'px)';
+    if(t<1)slotFrame=requestAnimationFrame(frame);
+    else{
+      slot.classList.remove('is-ten');slot.style.display='none';
+      result.classList.remove('shaking');cb();
+    }
+  }
+  slotFrame=requestAnimationFrame(frame);
+}
 function drawOne(p){
   var target=pick(p);
-  if(reduceMotion()){showStation(target);finish();return}
-  startSlot(p);
-  setTimeout(function(){stopSlot(function(){showStation(target);finish()})},1400+Math.random()*500);
+  if(reduceMotion()){result.classList.remove('shaking');showStation(target);finish();return}
+  startSlot(p,[target],function(){showStation(target);finish()});
 }
 function drawTen(p){
   var res=[];
@@ -355,11 +483,13 @@ function drawTen(p){
   }else{
     for(var j=0;j<10;j++)res.push(pick(p));
   }
-  if(reduceMotion()){showTen(res);finish();return}
-  startSlot(p);
-  setTimeout(function(){stopSlot(function(){showTen(res);finish()})},1600+Math.random()*500);
+  if(reduceMotion()){result.classList.remove('shaking');showTen(res);finish();return}
+  startSlot(p,res,function(){showTen(res);finish()});
 }
-function finish(){drawing=false;drawBtn.disabled=false}
+function finish(){
+  drawing=false;drawBtn.disabled=false;drawBtn.removeAttribute('aria-busy');
+  drawBtn.textContent=mode==='ten'?'🎰 再抽 10 站':'🎰 再抽一站';
+}
 
 /* ---------- 展示 ---------- */
 function showStation(s,fromHist){
@@ -377,8 +507,8 @@ function showStation(s,fromHist){
     stLines.appendChild(t);
   });
   result.style.setProperty('--rail',s.lines[0].color);
-  /* 重触发 pop 动画 */
-  stName.classList.remove('pop');void stName.offsetWidth;stName.classList.add('pop');
+  result.classList.remove('glowing');void result.offsetWidth;result.classList.add('glowing');
+  finalBox.classList.remove('revealing');void finalBox.offsetWidth;finalBox.classList.add('revealing');
   setupShare(s);
   if(!fromHist)pushHist(s);
 }
@@ -388,7 +518,7 @@ function showTen(list){
   var first=list[0];
   result.style.setProperty('--rail',first.lines[0].color);
   list.forEach(function(s){
-    var d=document.createElement('div');d.className='ten-item';
+    var d=document.createElement('div');d.className='ten-item reveal';d.style.setProperty('--i',tenList.children.length);
     var tags=s.lines.map(function(l){
       return '<span class="lt" style="background:'+l.color+'">'+l.name+'</span>';
     }).join('');
@@ -404,6 +534,7 @@ function baikeName(s){
 }
 function setupShare(s){
   shareRow.style.display='flex';
+  shareRow.classList.remove('appear');void shareRow.offsetWidth;shareRow.classList.add('appear');
   $('wiki-link').href='https://baike.baidu.com/item/'+encodeURIComponent(baikeName(s)+'站');
   $('wiki-link').title='查看'+baikeName(s)+'站的百度百科词条';
   var q=encodeURIComponent(s.name+'地铁站 成都');
@@ -446,6 +577,60 @@ function renderHist(){
     box.appendChild(b);
   });
 }
+/* ---------- 使用说明：首次自动展示，支持滑动、键盘与焦点管理 ---------- */
+var tutorial=$('tutorial'),ttTrack=$('tt-track'),ttDots=$('tt-dots'),ttIdx=0,ttTimer=0,ttReturnFocus=null;
+var ttSlides=ttTrack.children;
+Array.prototype.forEach.call(ttSlides,function(_,i){
+  var b=document.createElement('button');b.type='button';b.setAttribute('aria-label','第'+(i+1)+'页');
+  b.addEventListener('click',function(){ttGo(i)});ttDots.appendChild(b);
+});
+function ttGo(i){
+  ttIdx=Math.max(0,Math.min(ttSlides.length-1,i));
+  ttTrack.style.transform='translateX(-'+(ttIdx*100)+'%)';
+  Array.prototype.forEach.call(ttDots.children,function(d,k){d.classList.toggle('on',k===ttIdx);d.setAttribute('aria-current',k===ttIdx?'step':'false')});
+  $('tt-prev').disabled=ttIdx===0;
+  $('tt-next').textContent=ttIdx===ttSlides.length-1?'开始抽选':'下一步';
+}
+function showTutorial(on){
+  clearTimeout(ttTimer);
+  if(on){
+    ttReturnFocus=document.activeElement;ttGo(0);tutorial.hidden=false;
+    document.body.style.overflow='hidden';void tutorial.offsetWidth;tutorial.classList.add('on');
+    tutorial.querySelector('.tt-panel').focus();
+  }else{
+    tutorial.classList.remove('on');
+    ttTimer=setTimeout(function(){tutorial.hidden=true;document.body.style.overflow=''},300);
+    try{localStorage.setItem('cdgacha-tut-seen','1')}catch(e){}
+    if(ttReturnFocus&&ttReturnFocus.focus)ttReturnFocus.focus();
+  }
+}
+$('help-btn').addEventListener('click',function(){showTutorial(true)});
+$('tt-skip').addEventListener('click',function(){showTutorial(false)});
+$('tt-backdrop').addEventListener('click',function(){showTutorial(false)});
+$('tt-next').addEventListener('click',function(){if(ttIdx===ttSlides.length-1)showTutorial(false);else ttGo(ttIdx+1)});
+$('tt-prev').addEventListener('click',function(){ttGo(ttIdx-1)});
+document.addEventListener('keydown',function(e){
+  if(tutorial.hidden)return;
+  if(e.key==='Escape'){e.preventDefault();showTutorial(false)}
+  if(e.key==='ArrowRight'){e.preventDefault();ttGo(ttIdx+1)}
+  if(e.key==='ArrowLeft'){e.preventDefault();ttGo(ttIdx-1)}
+  if(e.key==='Tab'){
+    var els=tutorial.querySelectorAll('button:not([disabled]),[tabindex="0"]');
+    var first=els[0],last=els[els.length-1];
+    if(e.shiftKey&&(document.activeElement===first||document.activeElement.classList.contains('tt-panel'))){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+  }
+});
+(function(){
+  var x0=null,y0=0;
+  ttTrack.addEventListener('touchstart',function(e){x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  ttTrack.addEventListener('touchend',function(e){
+    if(x0===null)return;
+    var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy))ttGo(ttIdx+(dx<0?1:-1));
+  });
+})();
+try{if(!localStorage.getItem('cdgacha-tut-seen'))setTimeout(function(){showTutorial(true)},600)}catch(e){}
 })();
 </script>
 </body>
