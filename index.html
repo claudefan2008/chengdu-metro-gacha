@@ -134,6 +134,16 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
   border-radius:12px;padding:9px;font-size:.85rem;cursor:pointer;font-family:inherit;
 }
 .mode.on{border-color:var(--accent);color:var(--accent);font-weight:700;background:var(--accent-soft)}
+.challenge-setting{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);margin-bottom:16px}
+.challenge-setting label{font-size:.88rem;font-weight:700;cursor:pointer}
+.challenge-setting small{display:block;margin-top:4px;color:var(--sub);font-size:.7rem;font-weight:400}
+.switch{position:relative;flex:none;width:42px;height:24px;cursor:pointer}
+.switch input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.switch-track{display:block;width:100%;height:100%;border-radius:999px;background:var(--line);pointer-events:none;transition:background .2s}
+.switch-track::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.2);transition:transform .2s}
+.switch input:checked+.switch-track{background:var(--accent)}
+.switch input:checked+.switch-track::after{transform:translateX(18px)}
+.switch input:focus-visible+.switch-track{outline:3px solid var(--accent);outline-offset:3px}
 /* ---------- 分享行 ---------- */
 .share-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:4px}
 .share-btn{
@@ -303,6 +313,10 @@ footer a{color:var(--sub)}
       <button class="mode on" data-mode="single" type="button">单抽</button>
       <button class="mode" data-mode="ten" type="button">十连抽</button>
     </div>
+    <div class="challenge-setting">
+      <label for="challenge-toggle">🎲 出行挑战卡<small>默认关闭，开启后随机附带出行小任务</small></label>
+      <span class="switch"><input id="challenge-toggle" type="checkbox" role="switch" aria-label="启用出行挑战卡"><span class="switch-track" aria-hidden="true"></span></span>
+    </div>
     <h2>按线路筛选（不选 = 全部线路）</h2>
     <div class="chips" id="chips"></div>
   </div>
@@ -348,8 +362,8 @@ footer a{color:var(--sub)}
       </div>
       <div class="tt-slide">
         <div class="tt-fig"><div class="tt-challenge"><b>🎲 出行挑战卡 ↻</b><p>选一个没去过的出口出站，沿街慢慢走 15 分钟，再决定下一站。</p><small>📍 春熙路 · 探索</small></div></div>
-        <h2>随机一站，再随机一个任务</h2>
-        <p>查看单站卡片时，会附上一张探索、观察或美食挑战。不喜欢可以点「↻ 换一张」，系统分享也会带上任务。十连列表点击任意一站即可查看对应挑战。</p>
+        <h2>按需要开启出行挑战</h2>
+        <p>「出行挑战卡」默认关闭。可在筛选区打开开关，抽中车站后获得探索、观察或美食任务；支持「↻ 换一张」和分享任务。关闭后立即隐藏卡片，不再附带任务。</p>
       </div>
       <div class="tt-slide">
         <div class="tt-fig"><div class="tt-links"><span>📖 百度百科</span><span>🗺️ 高德地图</span><span>🧭 百度地图</span><span>🔗 复制分享链接</span><span>📤 分享</span></div></div>
@@ -372,6 +386,8 @@ footer a{color:var(--sub)}
 "use strict";
 var LINES=[], STATIONS=[], stationById=new Map();
 var mode='single', selected=new Set(), current=null, currentChallenge=null, drawing=false;
+var challengeEnabled=false;
+try{challengeEnabled=localStorage.getItem('cdgacha-challenge')==='1'}catch(e){}
 var hist=[];
 
 var $=function(id){return document.getElementById(id)};
@@ -555,7 +571,7 @@ var CHALLENGES=[
 ];
 var challengeBox=$('challenge'),challengeText=$('challenge-text'),lastChallenge=-1;
 function renderChallenge(s,reroll){
-  if(!s){challengeBox.style.display='none';currentChallenge=null;return}
+  if(!s||!challengeEnabled){challengeBox.style.display='none';currentChallenge=null;return}
   var index;
   do{index=randInt(CHALLENGES.length)}while(reroll&&CHALLENGES.length>1&&index===lastChallenge);
   lastChallenge=index;currentChallenge=CHALLENGES[index];
@@ -565,7 +581,14 @@ function renderChallenge(s,reroll){
   challengeBox.style.display='block';
   challengeBox.classList.remove('appear');void challengeBox.offsetWidth;challengeBox.classList.add('appear');
 }
-$('challenge-reroll').addEventListener('click',function(){if(current)renderChallenge(current,true)});
+var challengeToggle=$('challenge-toggle');
+challengeToggle.checked=challengeEnabled;
+challengeToggle.addEventListener('change',function(){
+  challengeEnabled=challengeToggle.checked;
+  try{localStorage.setItem('cdgacha-challenge',challengeEnabled?'1':'0')}catch(e){}
+  renderChallenge(current);
+});
+$('challenge-reroll').addEventListener('click',function(){if(current&&challengeEnabled)renderChallenge(current,true)});
 function showStation(s,fromHist){
   current=s;
   slot.style.display='none';tenList.style.display='none';hintArea.style.display='none';
@@ -624,7 +647,7 @@ function setupShare(s){
   };
   $('sys-share').onclick=function(){
     var url=location.origin+location.pathname+'?station='+s.id;
-    var text='我抽到了「'+s.name+'」站！'+(current===s&&currentChallenge?' 本次挑战：'+currentChallenge.text:'');
+    var text='我抽到了「'+s.name+'」站！'+(challengeEnabled&&current===s&&currentChallenge?' 本次挑战：'+currentChallenge.text:'');
     if(navigator.share){navigator.share({title:'下一站去哪儿 · '+s.name,text:text,url:url}).catch(function(){})}
     else{$('copy-link').click()}
   };
