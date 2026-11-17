@@ -848,6 +848,7 @@ function renderDex(){
   dexMeta.textContent=got?('已收集 '+got+' 座 · 还差 '+(total-got)+' 座走遍全网'):'还没有盖章，抽一站开始收集';
   dexLines.innerHTML='';
   dexLines.appendChild(dexLineBtn('全部',got+'/'+total,'all',null));
+  dexLines.appendChild(dexLineBtn('已收集',String(got),'got',null));
   LINES.forEach(function(line){
     var t=0,g=0;
     DRAWABLE.forEach(function(s){
@@ -856,8 +857,12 @@ function renderDex(){
     if(t)dexLines.appendChild(dexLineBtn(line.name,g+'/'+t,line.code,line.color));
   });
   dexGrid.innerHTML='';
-  var shown=DRAWABLE.filter(function(s){return dexFilter==='all'||s.lines.some(function(l){return l.code===dexFilter})});
-  if(!shown.length)dexGrid.innerHTML='<p class="dex-empty">这条线路下没有可收集的车站</p>';
+  var shown=DRAWABLE.filter(function(s){
+    if(dexFilter==='all')return true;
+    if(dexFilter==='got')return !!dex[s.name];
+    return s.lines.some(function(l){return l.code===dexFilter});
+  });
+  if(!shown.length)dexGrid.innerHTML='<p class="dex-empty">这里还没有盖章的站</p>';
   shown.forEach(function(s){
     var e=dex[s.name],b=document.createElement('button');
     b.type='button';b.className='dex-st'+(e?' on':'');
@@ -877,6 +882,14 @@ function renderDex(){
     if(justNew&&justNew.indexOf(s.name)>-1)b.classList.add('new');
     dexGrid.appendChild(b);
   });
+  /* 新盖章的站自动滚进网格可视区（只滚网格，不滚页面） */
+  if(justNew&&justNew.length){
+    var nw=Array.prototype.filter.call(dexGrid.children,function(b){return b.classList.contains('new')})[0];
+    if(nw){
+      var gb=dexGrid.getBoundingClientRect(),cb=nw.getBoundingClientRect();
+      dexGrid.scrollTop+=(cb.top-gb.top)-10;
+    }
+  }
   var left=total-got;
   $('dex-new-note').textContent=left?'还剩 '+left+' 座未收集，开启后只抽这些':'全部收集完成 🎉';
   dexSwitch.checked=dexNewOnly;
