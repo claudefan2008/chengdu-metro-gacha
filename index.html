@@ -94,6 +94,7 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .ten-item{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   border:1px solid var(--line);border-radius:14px;padding:10px 14px;cursor:pointer;
+  background:var(--card);color:var(--ink);font:inherit;text-align:left;
   transition:transform .15s;
 }
 .ten-item:hover{transform:translateY(-2px)}
@@ -111,6 +112,33 @@ header{display:flex;align-items:center;justify-content:space-between;margin-bott
 .btn-primary{background:var(--accent);color:#fff;box-shadow:0 6px 18px rgba(216,67,21,.35)}
 .btn-primary:disabled{opacity:.5;cursor:wait}
 .btn-ghost{background:var(--card);color:var(--ink);border:1.5px solid var(--line)}
+/* ---------- 出发站与换乘提示 ---------- */
+.origin{border:1px solid var(--line);border-radius:16px;background:var(--card);margin-top:12px;font-size:.88rem}
+.origin summary{padding:13px 15px;cursor:pointer;color:var(--ink);font-weight:700}
+.origin summary span{color:var(--sub);font-weight:400;margin-left:.5em}
+.origin-panel{padding:0 15px 15px;display:grid;gap:8px}
+.origin-panel input{
+  width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 12px;
+  color:var(--ink);background:var(--bg);font:inherit;font-size:1rem;
+}
+.origin-choices{list-style:none;display:grid;gap:4px}
+.origin-choices button,.origin-clear{
+  text-align:left;color:var(--ink);font:inherit;background:var(--card);cursor:pointer;
+  border:1px solid var(--line);border-radius:8px;padding:8px 10px;
+}
+.origin-choices button{width:100%;display:flex;flex-wrap:wrap;justify-content:space-between;gap:3px 12px}
+.origin-choices button:hover,.origin-clear:hover{background:var(--accent-soft)}
+.origin-choices small,#origin-message{color:var(--sub);font-size:.75rem}
+.origin-clear{justify-self:start}
+.route{border-top:1px solid var(--line);margin-top:18px;padding-top:14px;text-align:left}
+.route-heading{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 12px}
+.route-heading h2{font-size:.98rem}
+.route-summary,.route-note{color:var(--sub);font-size:.75rem;line-height:1.6}
+.route-steps{list-style:none;display:grid;gap:5px;margin:9px 0}
+.route-steps li{border-radius:10px;padding:8px 10px;background:var(--bg);font-size:.85rem;line-height:1.55}
+.route-steps li strong{display:block}
+.route-steps li span{color:var(--sub);font-size:.8rem}
+.route-steps .route-transfer{background:var(--accent-soft);color:var(--accent);font-weight:700}
 /* ---------- 筛选 ---------- */
 .filters{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:18px}
 .filters h2{font-size:.85rem;color:var(--sub);font-weight:500;margin-bottom:12px;letter-spacing:.1em}
@@ -353,6 +381,14 @@ html.dark .dex-st.on i{background:color-mix(in srgb,var(--c) 45%,#fff)}
       <div class="station-name" id="st-name"></div>
       <div class="station-sub" id="st-py"></div>
       <div class="line-tags" id="st-lines"></div>
+      <section class="route" id="route" aria-labelledby="route-title" hidden>
+        <div class="route-heading">
+          <h2 id="route-title">换乘提示</h2>
+          <p class="route-summary" id="route-summary"></p>
+        </div>
+        <ol class="route-steps" id="route-steps"></ol>
+        <p class="route-note" id="route-note">按站表估算，优先少换乘。请核对列车停站和运营时间。</p>
+      </section>
     </div>
     <div class="ten-list" id="ten-list"></div>
   </div>
@@ -360,6 +396,17 @@ html.dark .dex-st.on i{background:color-mix(in srgb,var(--c) 45%,#fff)}
   <div class="actions">
     <button class="btn btn-primary" id="draw-btn">🎰 抽 一 站</button>
   </div>
+
+  <details class="origin" id="origin" hidden>
+    <summary id="origin-label">出发站<span id="origin-selected">可选</span></summary>
+    <div class="origin-panel">
+      <label for="origin-search">搜索中文或英文站名</label>
+      <input type="search" id="origin-search" placeholder="例如：文殊院" autocomplete="off">
+      <p id="origin-message" role="status"></p>
+      <ul class="origin-choices" id="origin-choices" aria-label="匹配的车站"></ul>
+      <button class="origin-clear" id="origin-clear" type="button" hidden>清除出发站</button>
+    </div>
+  </details>
 
   <section class="challenge" id="challenge" aria-label="本次出行挑战">
     <div class="challenge-top">
@@ -467,7 +514,7 @@ html.dark .dex-st.on i{background:color-mix(in srgb,var(--c) 45%,#fff)}
       <div class="tt-slide">
         <div class="tt-fig"><div class="tt-links"><span>📖 百度百科</span><span>🗺️ 高德地图</span><span>🧭 百度地图</span><span>🔗 复制分享链接</span><span>📤 分享</span></div></div>
         <h2>查百科、开地图、分享下一站</h2>
-        <p>抽中后可打开该站的百度百科或地图。复制分享链接，朋友打开就能看到同一座车站；支持系统分享的设备也可直接调用分享面板。</p>
+        <p>选好出发站后，结果卡会显示坐哪条线、在哪里换乘。也可以打开地图或百度百科，或把抽中的站点链接发给朋友。</p>
       </div>
       <div class="tt-slide">
         <div class="tt-fig"><div class="tt-history"><span>春熙路</span><span>海桐街</span><span>兰家沟</span><span>文殊院</span></div></div>
@@ -480,6 +527,7 @@ html.dark .dex-st.on i{background:color-mix(in srgb,var(--c) 45%,#fff)}
   </section>
 </div>
 
+<script src="route.js"></script>
 <script>
 (function(){
 "use strict";
@@ -528,6 +576,7 @@ fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
     if(s.name==='天府站')s.statusNote='仅供换乘，暂不提供进出站';
   });
   DRAWABLE=STATIONS.filter(isDrawable);
+  setupRoute();
   $('total-n').textContent=DRAWABLE.length;
   buildChips();
   renderDex();
@@ -541,6 +590,99 @@ fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
 }).catch(function(){
   hintArea.innerHTML='<div class="big">⚠️ 数据加载失败</div><div>请通过 http(s) 访问（本地双击打开会被浏览器拦截）</div>';
 });
+
+/* ---------- 换乘提示 ---------- */
+var routeNetwork=null, originStation=null, ORIGIN_KEY='cdgacha-origin';
+var originPanel=$('origin'), originSearch=$('origin-search'), originChoices=$('origin-choices');
+
+function setupRoute(){
+  if(!window.MetroRoute)return;
+  routeNetwork=MetroRoute.build(LINES,stationByName);
+  var previous;
+  try{previous=stationByName.get(localStorage.getItem(ORIGIN_KEY))}catch(e){}
+  if(previous&&isDrawable(previous)) originStation=previous;
+  showOrigin();
+  originPanel.hidden=false;
+}
+
+function showOrigin(){
+  $('origin-selected').textContent=originStation?originStation.name:'可选';
+  $('origin-clear').hidden=!originStation;
+}
+
+function chooseOrigin(station){
+  originStation=station;
+  try{
+    if(station) localStorage.setItem(ORIGIN_KEY,station.name);
+    else localStorage.removeItem(ORIGIN_KEY);
+  }catch(e){}
+  showOrigin();
+  renderRoute(current);
+  originPanel.open=false;
+  $('origin-label').focus();
+}
+
+function searchOrigins(){
+  var query=originSearch.value.trim().toLowerCase();
+  originChoices.replaceChildren();
+  var message=$('origin-message');
+  if(!query){message.textContent='选好出发站后，抽中车站就会显示换乘提示。';return}
+
+  var matches=DRAWABLE.filter(function(s){
+    return s.name.includes(query)||s.name+'站'===query||(s.en||'').toLowerCase().includes(query);
+  });
+  message.textContent=!matches.length?'没有匹配的车站。':
+    matches.length>8?'显示前 8 个结果，可以输入更完整的站名。':'';
+  matches.slice(0,8).forEach(function(s){
+    var item=document.createElement('li'), button=document.createElement('button');
+    button.type='button';
+    button.append(s.name);
+    var lines=document.createElement('small');
+    lines.textContent=s.lines.map(function(l){return l.name}).join(' / ');
+    button.appendChild(lines);
+    button.addEventListener('click',function(){chooseOrigin(s)});
+    originChoices.appendChild(item).appendChild(button);
+  });
+}
+
+originPanel.addEventListener('toggle',function(){
+  if(!originPanel.open)return;
+  originSearch.value='';
+  searchOrigins();
+  originSearch.focus();
+});
+originSearch.addEventListener('input',searchOrigins);
+$('origin-clear').addEventListener('click',function(){chooseOrigin(null)});
+
+function renderRoute(destination){
+  var box=$('route'), summary=$('route-summary'), steps=$('route-steps'), note=$('route-note');
+  box.hidden=!routeNetwork||!originStation||!destination;
+  if(box.hidden)return;
+
+  steps.replaceChildren();
+  var trip=routeNetwork.find(originStation.name,destination.name);
+  note.hidden=!trip||!trip.steps.length;
+  if(!trip){summary.textContent='暂无换乘方案，可打开地图查看。';return}
+  if(!trip.steps.length){summary.textContent='出发站和目的地是同一站。';return}
+
+  summary.textContent=trip.stops?(trip.transfers?'换乘 '+trip.transfers+' 次':'直达')+
+    ' · 乘车 '+trip.stops+' 站':'可以步行接驳';
+  trip.steps.forEach(function(step){
+    var li=document.createElement('li');
+    if(step.kind==='transfer'){
+      li.className='route-transfer';
+      li.textContent=step.from===step.to?'在 '+step.from+' '+step.note:
+        '从 '+step.from+' '+step.note+'至 '+step.to;
+    }else{
+      var heading=document.createElement('strong');
+      heading.textContent=step.line.name+' · '+step.direction+(step.line.code==='7'?'':'方向');
+      var detail=document.createElement('span');
+      detail.textContent=step.from+' → '+step.to+' · '+step.stops+' 站';
+      li.append(heading,detail);
+    }
+    steps.appendChild(li);
+  });
+}
 
 /* ---------- 线路筛选 ---------- */
 function buildChips(){
@@ -742,6 +884,7 @@ function showStation(s,fromHist){
   result.style.setProperty('--rail',s.lines[0].color);
   result.classList.remove('glowing');void result.offsetWidth;result.classList.add('glowing');
   finalBox.classList.remove('revealing');void finalBox.offsetWidth;finalBox.classList.add('revealing');
+  renderRoute(s);
   renderChallenge(s);
   setupShare(s);
   if(!fromHist)pushHist(s);
@@ -752,7 +895,7 @@ function showTen(list){
   var first=list[0];
   result.style.setProperty('--rail',first.lines[0].color);
   list.forEach(function(s){
-    var d=document.createElement('div');d.className='ten-item reveal';d.style.setProperty('--i',tenList.children.length);
+    var d=document.createElement('button');d.type='button';d.className='ten-item reveal';d.style.setProperty('--i',tenList.children.length);
     var tags=s.lines.map(function(l){
       return '<span class="lt" style="background:'+l.color+'">'+l.name+'</span>';
     }).join('');
