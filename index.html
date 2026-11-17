@@ -14,7 +14,7 @@
 }catch(e){}})();
 </script>
 <title>下一站去哪儿 — 成都地铁扭蛋｜随机选站决定你的下次出行</title>
-<meta name="description" content="从成都轨道交通线网随机抽一站：18条线路及支线、按线路筛选、单抽或十连。附站点百度百科、高德/百度地图直达，免费免登录。">
+<meta name="description" content="从成都轨道交通线网随机抽一站：19条线路及支线、按线路筛选、单抽或十连，抽中的站自动收进站点图鉴。附站点百度百科、高德/百度地图直达，免费免登录。">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/svg+xml" href="icon.svg">
 <meta name="theme-color" content="#faf7f2" media="(prefers-color-scheme: light)">
@@ -157,6 +157,50 @@ footer a{color:var(--sub)}
   border:1px solid var(--line);background:var(--card);color:var(--ink);
   border-radius:999px;padding:6px 13px;font-size:.78rem;cursor:pointer;font-family:inherit;
 }
+/* ---------- 站点图鉴 ---------- */
+.dex{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-top:18px}
+.dex-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.dex-head h2{font-size:.85rem;color:var(--sub);font-weight:500;letter-spacing:.1em}
+.dex-count{font-size:.78rem;color:var(--sub);font-variant-numeric:tabular-nums}
+.dex-count b{font-size:1.05rem;color:var(--accent);font-weight:900}
+.dex-bar{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:12px}
+.dex-bar i{display:block;height:100%;border-radius:999px;transform-origin:left;transform:scaleX(0);
+  background:linear-gradient(90deg,var(--accent),#ffa06a);transition:transform .55s cubic-bezier(.2,.9,.3,1)}
+.dex-meta{font-size:.74rem;color:var(--sub);line-height:1.7;margin:9px 0 11px}
+.dex-lines{display:flex;gap:6px;overflow-x:auto;padding-bottom:9px;margin-bottom:9px;scrollbar-width:none}
+.dex-lines::-webkit-scrollbar{display:none}
+.dex-line{flex:none;display:inline-flex;align-items:center;gap:5px;border:1.5px solid var(--line);
+  background:transparent;color:var(--sub);border-radius:999px;padding:5px 10px;font-size:.72rem;
+  font-family:inherit;cursor:pointer;white-space:nowrap;transition:all .15s}
+.dex-line .dot{width:7px;height:7px;border-radius:50%}
+.dex-line em{font-style:normal;opacity:.72;font-variant-numeric:tabular-nums}
+.dex-line.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:700}
+.dex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:7px;
+  max-height:240px;overflow-y:auto;overscroll-behavior:contain;padding:2px 4px 2px 0}
+.dex-st{display:flex;align-items:center;gap:6px;border:1.5px dashed var(--line);background:transparent;
+  color:color-mix(in srgb,var(--ink) 58%,var(--sub));border-radius:10px;padding:8px 9px;font-family:inherit;font-size:.72rem;text-align:left;
+  overflow:hidden;white-space:nowrap;transition:transform .15s}
+.dex-st i{width:8px;height:8px;border-radius:50%;flex:none;border:1.5px dashed var(--line)}
+.dex-st span{overflow:hidden;text-overflow:ellipsis}
+.dex-st.on{border-style:solid;border-color:var(--c);color:var(--ink);font-weight:700;cursor:pointer;
+  background:color-mix(in srgb,var(--c) 13%,var(--card))}
+.dex-st.on i{background:var(--c);border:0}
+.dex-st.on:hover{transform:translateY(-1px)}
+html.dark .dex-st.on{border-color:color-mix(in srgb,var(--c) 45%,#fff);background:color-mix(in srgb,var(--c) 22%,var(--card))}
+html.dark .dex-st.on i{background:color-mix(in srgb,var(--c) 45%,#fff)}
+.dex-st.new{animation:stamp .5s cubic-bezier(.2,1.25,.35,1) both}
+@keyframes stamp{0%{opacity:.35;transform:scale(.82)}60%{transform:scale(1.06)}100%{opacity:1;transform:none}}
+.dex-new-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:13px;
+  padding-top:13px;border-top:1px solid var(--line)}
+.dex-new-row label{font-size:.8rem;font-weight:700;cursor:pointer}
+.dex-new-row small{display:block;color:var(--sub);font-size:.68rem;font-weight:400;margin-top:3px;line-height:1.5}
+.dex-empty{grid-column:1/-1;color:var(--sub);font-size:.75rem;padding:12px 2px}
+.toast{position:fixed;left:50%;bottom:26px;z-index:30;max-width:86vw;text-align:center;
+  background:var(--ink);color:var(--bg);border-radius:999px;padding:10px 20px;font-size:.82rem;font-weight:700;
+  box-shadow:0 10px 26px rgba(0,0,0,.28);pointer-events:none;
+  opacity:0;transform:translate(-50%,14px);transition:opacity .3s,transform .3s cubic-bezier(.2,.85,.3,1)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media(max-width:420px){.dex{padding:15px}.dex-grid{grid-template-columns:repeat(auto-fill,minmax(84px,1fr))}}
 /* ---------- 出行挑战卡 ---------- */
 .challenge{
   display:none;width:100%;max-width:440px;position:relative;overflow:hidden;
@@ -226,7 +270,7 @@ footer a{color:var(--sub)}
 .tutorial[hidden]{display:none}
 .tutorial{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;padding:20px}
 .tt-backdrop{position:absolute;inset:0;background:rgba(18,15,12,.48);opacity:0;transition:opacity .28s;backdrop-filter:blur(4px)}
-.tt-panel{position:relative;width:100%;max-width:420px;max-height:calc(100dvh - 40px);overflow-y:auto;
+.tt-panel{position:relative;width:100%;max-width:420px;max-height:calc(100dvh - 40px);overflow-y:auto;overflow-x:hidden;
   border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:0 24px 60px rgba(0,0,0,.25);
   opacity:0;transform:translateY(16px) scale(.97);transition:transform .32s cubic-bezier(.2,.85,.25,1),opacity .25s}
 .tutorial.on .tt-backdrop{opacity:1}.tutorial.on .tt-panel{opacity:1;transform:none}
@@ -269,6 +313,11 @@ footer a{color:var(--sub)}
 .tt-challenge small{display:block;margin-top:12px;color:var(--sub);font-size:.7rem}
 .tt-history{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:240px}
 .tt-history span{padding:7px 12px;border:1px solid var(--line);border-radius:999px;font-size:.76rem}
+.tt-dex{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;width:250px}
+.tt-dex span{display:flex;align-items:center;gap:5px;border:1.5px dashed var(--line);border-radius:9px;padding:7px 8px;font-size:.7rem;color:var(--sub)}
+.tt-dex span i{width:7px;height:7px;border-radius:50%;flex:none;border:1.5px dashed var(--line)}
+.tt-dex span.on{border-style:solid;border-color:var(--c);color:var(--ink);font-weight:700;background:color-mix(in srgb,var(--c) 13%,var(--card))}
+.tt-dex span.on i{background:var(--c);border:0}
 @keyframes tap{0%,30%{opacity:0;transform:scale(.5)}45%{opacity:1}80%,100%{opacity:0;transform:scale(1.4)}}
 @keyframes swipe-hand{0%,20%,80%,100%{transform:translateX(0);opacity:0}40%,65%{transform:translateX(-28px);opacity:1}}
 @media(max-width:420px){.wrap{padding-left:14px;padding-right:14px}.brand{font-size:1rem}.header-actions{gap:5px}#theme-btn,.help-btn{padding:6px 10px}.tutorial{padding:12px}.tt-panel{max-height:calc(100dvh - 24px)}.tt-slide{padding-left:24px;padding-right:24px}}
@@ -346,10 +395,28 @@ footer a{color:var(--sub)}
     <div class="hist-chips" id="hist-chips"></div>
   </div>
 
+  <section class="dex" id="dex" aria-labelledby="dex-title">
+    <div class="dex-head">
+      <h2 id="dex-title">🗂 站点图鉴</h2>
+      <span class="dex-count"><b id="dex-got">0</b> / <span id="dex-all">--</span></span>
+    </div>
+    <div class="dex-bar" id="dex-bar" role="progressbar" aria-labelledby="dex-title" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="dex-fill"></i></div>
+    <p class="dex-meta" id="dex-meta">还没有盖章，抽一站开始收集</p>
+    <div class="dex-lines" id="dex-lines" aria-label="按线路查看图鉴"></div>
+    <div class="dex-grid" id="dex-grid"></div>
+    <div class="dex-new-row">
+      <label for="dex-new">🚏 只抽未收集的站<small id="dex-new-note">开启后只从还没盖章的车站里抽</small></label>
+      <span class="switch"><input id="dex-new" type="checkbox" role="switch" aria-label="只抽未收集的站"><span class="switch-track" aria-hidden="true"></span></span>
+    </div>
+  </section>
+
+  <div class="toast" id="dex-toast" role="status" aria-live="polite"></div>
+
   <footer>
     灵感来源：<a href="https://la-rikopatto.github.io/kien-sekve/" target="_blank" rel="noopener">次はどこへ — 駅ガチャ</a>（日本版）<br>
     线路依据用户提供的《成都轨道交通线网示意图》整理；站名及运营状态参考成都轨道集团、百度百科公开资料。<br>
     暂未开通、暂停运营站及仅供换乘的天府站不参与抽选。线路及运营状态请以成都轨道集团公告为准。<br>
+    抽选记录、站点图鉴与设置仅保存在本机浏览器，清除站点数据后会一并重置。<br>
     下一站去哪儿 © 2026 · 成都地铁扭蛋
   </footer>
 </div>
@@ -386,6 +453,18 @@ footer a{color:var(--sub)}
         <p>「出行挑战卡」默认关闭。可在筛选区打开开关，抽中车站后获得探索、观察或美食任务；支持「↻ 换一张」和分享任务。关闭后立即隐藏卡片，不再附带任务。</p>
       </div>
       <div class="tt-slide">
+        <div class="tt-fig"><div class="tt-dex">
+          <span class="on" style="--c:#D5006A"><i></i>春熙路</span>
+          <span class="on" style="--c:#28286E"><i></i>文殊院</span>
+          <span class="on" style="--c:#98C51A"><i></i>东大路</span>
+          <span><i></i>海桐街</span>
+          <span><i></i>兰家沟</span>
+          <span><i></i>国宁</span>
+        </div></div>
+        <h2>抽过的站，会盖章收进图鉴</h2>
+        <p>每次抽中的车站都会自动记进「站点图鉴」，按线路统计进度，集齐全部可抽车站。已盖章的站可以点开回看；在页面下方打开「只抽未收集的站」，就只会抽到还没盖过章的车站。</p>
+      </div>
+      <div class="tt-slide">
         <div class="tt-fig"><div class="tt-links"><span>📖 百度百科</span><span>🗺️ 高德地图</span><span>🧭 百度地图</span><span>🔗 复制分享链接</span><span>📤 分享</span></div></div>
         <h2>查百科、开地图、分享下一站</h2>
         <p>抽中后可打开该站的百度百科或地图。复制分享链接，朋友打开就能看到同一座车站；支持系统分享的设备也可直接调用分享面板。</p>
@@ -404,7 +483,7 @@ footer a{color:var(--sub)}
 <script>
 (function(){
 "use strict";
-var LINES=[], STATIONS=[], stationById=new Map();
+var LINES=[], STATIONS=[], stationById=new Map(), stationByName=new Map(), DRAWABLE=[];
 var mode='single', selected=new Set(), current=null, currentChallenge=null, drawing=false;
 var challengeEnabled=false;
 try{challengeEnabled=localStorage.getItem('cdgacha-challenge')==='1'}catch(e){}
@@ -427,6 +506,7 @@ $('theme-btn').addEventListener('click',function(){
 });
 
 /* ---------- 数据 ---------- */
+function isDrawable(s){return s.status==='open'&&s.name!=='天府站'}
 fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
   LINES=lines;
   var seen=new Map();
@@ -442,13 +522,15 @@ fetch('stations.json').then(function(r){return r.json()}).then(function(lines){
   });
   STATIONS=Array.from(seen.values());
   STATIONS.forEach(function(s){
-    stationById.set(s.id,s);
+    stationById.set(s.id,s);stationByName.set(s.name,s);
     if(s.status==='unopened')s.statusNote='暂未开通';
     if(s.status==='suspended')s.statusNote='暂停运营';
     if(s.name==='天府站')s.statusNote='仅供换乘，暂不提供进出站';
   });
-  $('total-n').textContent=STATIONS.filter(function(s){return s.status==='open'&&s.name!=='天府站'}).length;
+  DRAWABLE=STATIONS.filter(isDrawable);
+  $('total-n').textContent=DRAWABLE.length;
   buildChips();
+  renderDex();
   /* 分享链接 ?station=sNN */
   try{
     var q=new URLSearchParams(location.search).get('station');
@@ -487,9 +569,14 @@ document.querySelectorAll('.mode').forEach(function(b){
 
 /* ---------- 抽选 ---------- */
 function pool(){
-  var available=STATIONS.filter(function(s){return s.status==='open'&&s.name!=='天府站'});
-  if(!selected.size) return available;
-  return available.filter(function(s){return s.lines.some(function(l){return selected.has(l.code)})});
+  var base=DRAWABLE;
+  if(selected.size)base=DRAWABLE.filter(function(s){return s.lines.some(function(l){return selected.has(l.code)})});
+  /* 只抽未收集：池子抽空了就回退到当前线路的全池 */
+  if(dexNewOnly){
+    var fresh=base.filter(function(s){return !dex[s.name]});
+    if(fresh.length)return fresh;
+  }
+  return base;
 }
 function randInt(n){
   if(window.crypto&&crypto.getRandomValues){
@@ -571,8 +658,8 @@ function startSlot(p,targets,cb){
 }
 function drawOne(p){
   var target=pick(p);
-  if(reduceMotion()){result.classList.remove('shaking');showStation(target);finish();return}
-  startSlot(p,[target],function(){showStation(target);finish()});
+  if(reduceMotion()){result.classList.remove('shaking');showStation(target);finish();toastDex(collect([target]),[target]);return}
+  startSlot(p,[target],function(){showStation(target);finish();toastDex(collect([target]),[target])});
 }
 function drawTen(p){
   var res=[];
@@ -675,6 +762,7 @@ function showTen(list){
   });
   setupShare(first);
   pushHist(first);
+  toastDex(collect(list),list);
 }
 function baikeName(s){
   return s.name==='中医大省医院'?'中医大·省医院':s.name;
@@ -701,6 +789,103 @@ function setupShare(s){
     else{$('copy-link').click()}
   };
 }
+
+/* ---------- 站点图鉴：抽到的站自动盖章，只保存在本机 ---------- */
+var DEX_KEY='cdgacha-dex', NEW_KEY='cdgacha-dex-new';
+var dex={},dexNewOnly=false,dexFilter='all',justNew=null,dexToastTimer=0;
+try{
+  var dexRaw=JSON.parse(localStorage.getItem(DEX_KEY)||'{}');
+  if(Array.isArray(dexRaw))dexRaw.forEach(function(n){dex[n]={t:0,n:1}});
+  else if(dexRaw&&typeof dexRaw==='object')dex=dexRaw;
+}catch(e){dex={}}
+try{dexNewOnly=localStorage.getItem(NEW_KEY)==='1'}catch(e){}
+var dexFill=$('dex-fill'),dexBar=$('dex-bar'),dexMeta=$('dex-meta'),
+    dexLines=$('dex-lines'),dexGrid=$('dex-grid'),dexToast=$('dex-toast'),dexSwitch=$('dex-new');
+function saveDex(){try{localStorage.setItem(DEX_KEY,JSON.stringify(dex))}catch(e){}}
+function dexGot(){var n=0;DRAWABLE.forEach(function(s){if(dex[s.name])n++});return n}
+function collect(list){
+  if(!list||!list.length)return {fresh:0,got:dexGot(),total:DRAWABLE.length};
+  var fresh=[];
+  list.forEach(function(s){
+    var e=dex[s.name];
+    if(e)e.n=(e.n||1)+1;
+    else{dex[s.name]={t:Date.now(),n:1};fresh.push(s.name)}
+  });
+  saveDex();
+  justNew=fresh;renderDex();justNew=null;
+  return {fresh:fresh.length,got:dexGot(),total:DRAWABLE.length};
+}
+function toastDex(info,list){
+  if(!list||!list.length)return;
+  if(list.length>1){
+    toast(info.fresh?'🗂 新收集 '+info.fresh+' 座 · '+info.got+'/'+info.total:'📮 这 10 座都已经收集过');
+    return;
+  }
+  var s=list[0],n=dex[s.name]?dex[s.name].n:1;
+  toast(info.fresh?'🗂 新收集「'+s.name+'」 · '+info.got+'/'+info.total:'📮 「'+s.name+'」已收集 · 第 '+n+' 次抽到');
+}
+function toast(msg){
+  dexToast.textContent=msg;dexToast.classList.add('on');
+  clearTimeout(dexToastTimer);
+  dexToastTimer=setTimeout(function(){dexToast.classList.remove('on')},2100);
+}
+function dexLineBtn(label,count,code,color){
+  var b=document.createElement('button');b.type='button';
+  b.className='dex-line'+(dexFilter===code?' on':'');
+  if(color){var d=document.createElement('span');d.className='dot';d.style.background=color;b.appendChild(d)}
+  var l=document.createElement('span');l.textContent=label;b.appendChild(l);
+  var c=document.createElement('em');c.textContent=count;b.appendChild(c);
+  b.setAttribute('aria-pressed',dexFilter===code?'true':'false');
+  b.addEventListener('click',function(){dexFilter=code;renderDex()});
+  return b;
+}
+function renderDex(){
+  if(!DRAWABLE.length)return;
+  var total=DRAWABLE.length,got=dexGot();
+  $('dex-got').textContent=got;$('dex-all').textContent=total;
+  dexFill.style.transform='scaleX('+(got/total).toFixed(4)+')';
+  dexBar.setAttribute('aria-valuemax',total);dexBar.setAttribute('aria-valuenow',got);
+  dexMeta.textContent=got?('已收集 '+got+' 座 · 还差 '+(total-got)+' 座走遍全网'):'还没有盖章，抽一站开始收集';
+  dexLines.innerHTML='';
+  dexLines.appendChild(dexLineBtn('全部',got+'/'+total,'all',null));
+  LINES.forEach(function(line){
+    var t=0,g=0;
+    DRAWABLE.forEach(function(s){
+      if(s.lines.some(function(l){return l.code===line.code})){t++;if(dex[s.name])g++}
+    });
+    if(t)dexLines.appendChild(dexLineBtn(line.name,g+'/'+t,line.code,line.color));
+  });
+  dexGrid.innerHTML='';
+  var shown=DRAWABLE.filter(function(s){return dexFilter==='all'||s.lines.some(function(l){return l.code===dexFilter})});
+  if(!shown.length)dexGrid.innerHTML='<p class="dex-empty">这条线路下没有可收集的车站</p>';
+  shown.forEach(function(s){
+    var e=dex[s.name],b=document.createElement('button');
+    b.type='button';b.className='dex-st'+(e?' on':'');
+    b.style.setProperty('--c',s.lines[0].color);
+    b.innerHTML='<i aria-hidden="true"></i><span></span>';
+    b.lastChild.textContent=s.name;
+    b.title=s.name+(e?' · 已盖章':' · 未收集');
+    if(e){
+      b.setAttribute('aria-label',s.name+'，已盖章，点击回看');
+      b.addEventListener('click',function(){
+        showStation(s,true);
+        result.scrollIntoView({behavior:reduceMotion()?'auto':'smooth',block:'center'});
+      });
+    }else{
+      b.disabled=true;b.setAttribute('aria-label',s.name+'，未收集');
+    }
+    if(justNew&&justNew.indexOf(s.name)>-1)b.classList.add('new');
+    dexGrid.appendChild(b);
+  });
+  var left=total-got;
+  $('dex-new-note').textContent=left?'还剩 '+left+' 座未收集，开启后只抽这些':'全部收集完成 🎉';
+  dexSwitch.checked=dexNewOnly;
+}
+dexSwitch.addEventListener('change',function(){
+  dexNewOnly=dexSwitch.checked;
+  try{localStorage.setItem(NEW_KEY,dexNewOnly?'1':'0')}catch(e){}
+  renderDex();
+});
 
 /* ---------- 历史 ---------- */
 function loadHist(){
